@@ -5,8 +5,6 @@ import random
 # ~what is life~
 ####################################
 
-# this is a github test!
-
 # from the 112 course website
 def rgbString(r, g, b):
     return f'#{r:02x}{g:02x}{b:02x}'

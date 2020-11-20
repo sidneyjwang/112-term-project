@@ -2,7 +2,7 @@ from cmu_112_graphics import *
 import random
 
 ####################################
-# ~what is life~
+# this isn't sand
 ####################################
 
 # from the 112 course website

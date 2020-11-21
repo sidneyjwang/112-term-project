@@ -623,16 +623,16 @@ class App(object):
 # (with top-level functions not subclassses and methods)
 ####################################
 
-class TopLevelApp(App):
+class thisIsntSand(App):
     _apps = dict() # maps fnPrefix to app
 
     def __init__(app, fnPrefix='', **kwargs):
-        if (fnPrefix in TopLevelApp._apps):
+        if (fnPrefix in thisIsntSand._apps):
             print(f'Quitting previous version of {fnPrefix} TopLevelApp.')
-            TopLevelApp._apps[fnPrefix].quit()
+            thisIsntSand._apps[fnPrefix].quit()
         if ((fnPrefix != '') and ('title' not in kwargs)):
             kwargs['title'] = f"TopLevelApp '{fnPrefix}'"
-        TopLevelApp._apps[fnPrefix] = app
+        thisIsntSand._apps[fnPrefix] = app
         app._fnPrefix = fnPrefix
         app._callersGlobals = inspect.stack()[1][0].f_globals
         super().__init__(**kwargs)
@@ -731,7 +731,7 @@ def showGraphics(drawFn, **kwargs):
             drawFn(app, canvas)
     app = GraphicsApp(**kwargs)
 '''
-runApp = TopLevelApp
+runApp = thisIsntSand
 
 print(f'Loaded cmu_112_graphics version {App.version} (last updated {App.lastUpdated})')
 

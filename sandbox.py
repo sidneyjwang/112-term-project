@@ -15,6 +15,7 @@ class Particle:
     MAX_VELOCITY = 15
     HEIGHT = 0
     WIDTH = 0
+    TOTAL_PARTICLES = 0
     def __init__(self, xPos, yPos, xVelocity, yVelocity, intendedColor, 
                 colorVariation, height, width):
         self.xPos = xPos
@@ -33,6 +34,10 @@ class Particle:
         elif self.B < 0: self.B = 0
         self.color = rgbString(self.R, self.G, self.B)
         Particle.HEIGHT = height
+        Particle.WIDTH = width
+        Particle.TOTAL_PARTICLES += 1
+    def getMovePosition(self):
+        return (self.xPos + self.xVelocity, self.yPos + self.yVelocity)
     def move(self):
         self.yPos += self.yVelocity
         self.yVelocity += Particle.GRAVITY * self.time
@@ -43,16 +48,32 @@ class Particle:
         if self.yPos > Particle.HEIGHT:
             self.yPos = Particle.HEIGHT
         # revisit once sand piling starts:
-        # if self.xPos < Particle.WIDTH:
-        #     self.xPos = Particle.WIDTH
-        # elif self.xPos < 0:
-        #     self.xPos = 0
+        if self.xPos > Particle.WIDTH:
+            self.xPos = Particle.WIDTH
+        elif self.xPos < 0:
+            self.xPos = 0
+
+    def slide(self):
+        pass
 
 def appStarted(app):
     app.sand = [] # a list to keep track of all particle objects
     app.timerDelay = 1 # put this at 1 when not debugging
+    app.currentX = 0
+    app.currentY = 0
+    app.mouseIsPressed = False
+
+def mousePressed(app, event):
+    app.mouseIsPressed = True
+    app.currentX, app.currentY = event.x, event.y
+
+def mouseReleased(app, event):
+    app.mouseIsPressed = False
 
 def mouseDragged(app, event):
+    app.currentX, app.currentY = event.x, event.y
+
+def addParticles(app, x, y):
     sandGrainNumber = int(random.triangular(7, 15, 10))
     for i in range(sandGrainNumber):
         rVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
@@ -61,9 +82,10 @@ def mouseDragged(app, event):
         signFlip = random.choice([-1, 1])
         xVelocity = random.triangular(0, 2, 0) * signFlip
         yVelocity = random.random() * 7.5
-        app.sand.append(Particle(event.x, event.y, xVelocity, yVelocity, 
-                        (255,100,100), (rVar,gVar,bVar), app.height, app.width))
-
+        newParticle = Particle(x, y, xVelocity, yVelocity, 
+                        (255,100,100), (rVar,gVar,bVar), app.height, app.width)
+        app.sand.append(newParticle)
+        
 def drawSand(app, canvas):
     for particle in app.sand:
         canvas.create_rectangle(particle.xPos-1, particle.yPos-1, 
@@ -74,6 +96,8 @@ def redrawAll(app, canvas):
     drawSand(app, canvas)
 
 def timerFired(app):
+    if app.mouseIsPressed:
+        addParticles(app, app.currentX, app.currentY)
     for particle in app.sand:
         particle.move()
 

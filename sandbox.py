@@ -128,6 +128,9 @@ def timerFired(app):
     if app.mouseIsPressed:
         addParticles(app, app.currentX, app.currentY)
     for particle in range(len(app.sand)):
+        # at some point once everything is done, check up here if canSlide and 
+        # canDrop are both false. if so, just continue; there's no point in going
+        # through the rest of this.
         x, y = app.sand[particle].getMovePosition()
         if x > 500:
             x = 500
@@ -136,6 +139,7 @@ def timerFired(app):
         print(f'Particle #{particle}', 'Current position:', f'({app.sand[particle].xPos}, {app.sand[particle].yPos})')
         print(f'Particle #{particle}', 'Next position:', f'({x}, {y})')
         maxColValue = app.maxValuesPerCol[x]
+        # the sand grain has reached as far down as it will go!
         if y > maxColValue and app.sand[particle].canDrop:
             app.sand[particle].yPos = maxColValue - 2
             app.maxValuesPerCol[x] -= 2
@@ -144,13 +148,13 @@ def timerFired(app):
             print('this happened!')
             # set the x velocity to either 1 or -1 in preparation for sliding
             if app.sand[particle].xVelocity != 0:
-                app.sand[particle].xVelocity = app.sand[particle].xVelocity / abs(app.sand[particle].xVelocity)
+                app.sand[particle].xVelocity /= abs(app.sand[particle].xVelocity)
         # canDrop starts True, canSlide starts false
         # if canDrop is true:
         if app.sand[particle].canDrop:
             app.sand[particle].drop()
         else:
-            print(f'Particle # {particle}made it here!')
+            print(f'Particle # {particle} made it to sliding state!')
             # check if there's already a particle at the anticipated next position; if it is, set canSlide to true
         # if app.sand[particle].canSlide:
             # app.sand[particle].canDrop = False

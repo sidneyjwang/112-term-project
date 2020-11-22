@@ -27,7 +27,7 @@ class Particle:
         self.G = intendedColor[1] + colorVariation[1]
         self.B = intendedColor[1] + colorVariation[2]
         self.canDrop = True
-        self.canSlide = True
+        self.canSlide = False
         if self.R > 255: self.R = 255
         elif self.R < 0: self.R = 0
         if self.G > 255: self.G = 255
@@ -38,7 +38,7 @@ class Particle:
         Particle.HEIGHT = height
         Particle.WIDTH = width
         Particle.TOTAL_PARTICLES += 1
-    
+
     def getMovePosition(self):
         return (self.xPos + self.xVelocity, self.yPos + self.yVelocity)
     
@@ -125,11 +125,16 @@ def timerFired(app):
         x, y = app.sand[particle].getMovePosition()
         print(f'Particle #{particle}', 'Current position:', f'({app.sand[particle].xPos}, {app.sand[particle].yPos})')
         print(f'Particle #{particle}', 'Next position:', f'({x}, {y})')
+        # canDrop starts True, canSlide starts false
         # if canDrop is true:
         if app.sand[particle].canDrop:
             app.sand[particle].drop()
-        # if there is a particle at the next anticipated location of the particle: set canMove to false
-        # else: set canSlide and canMove to false
+            # check if there's already a particle at the anticipated next position; if it is, set canSlide to true
+        if app.sand[particle].canSlide:
+            app.sand[particle].canDrop = False
+            app.sand[particle].slide()
+            # check if it's reached the bottommost point that it can go to; if it is, set canSlide to false
+            # both should be false at this point
 
 def main():
     runApp(width=600, height=400)

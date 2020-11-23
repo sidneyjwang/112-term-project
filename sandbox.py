@@ -72,24 +72,24 @@ class Particle:
 
 def appStarted(app):
     app.sand = [] # a list to keep track of all particle objects
-    app.timerDelay = 10 # put this at 10 when not debugging
+    app.timerDelay = 100 # put this at 10 when not debugging
     app.currentX = 0 # the x position of the mouse
     app.currentY = 0 # the y position of the mouse
     app.mouseIsPressed = False # boolean flag: is the mouse being held?
-    app.maxValuesPerCol = {}
     app.effectiveAppWidth = 500 # for experimentation purposes: make the window smaller
-    app.effectiveAppHeight = 350 # for experimentation purposes: make the window smaller
+    app.effectiveAppHeight = 300 # for experimentation purposes: make the window smaller
     app.sandGrainSize = 10 # for experimenation purposes: make the sand actually visible
+    # keep track of the highest sand grain particle per column:
+    app.maxValuesPerCol = [app.effectiveAppHeight // app.sandGrainSize-1] * (app.effectiveAppWidth // app.sandGrainSize)
+    # sand grains that are no longer objects and have become part of the background
     app.sandCache = [['white'] * (app.effectiveAppWidth // app.sandGrainSize) for i in range(app.effectiveAppHeight // app.sandGrainSize)]
-    for i in range(1, 501):
-        app.maxValuesPerCol[i] = 300
 
-# update the mouse's x and y coordinates, and set the boolean to true
+# update the mouse's x and y coordinates, and set the mouseIsPressed boolean to true
 def mousePressed(app, event):
     app.mouseIsPressed = True
     app.currentX, app.currentY = getCell(app, event.y, event.x)
 
-# set boolean to false
+# set the mouseIsPressed boolean to false
 def mouseReleased(app, event):
     app.mouseIsPressed = False
 
@@ -102,6 +102,7 @@ def mouseDragged(app, event):
     app.currentX, app.currentY = getCell(app, event.y, event.x)
 
 # when the mouse is pressed, create a shower of sand emerging from the point
+# modify here for testing purposes if a single grain is needed instead of a shower
 def addParticles(app, x, y):
     sandGrainNumber = int(random.triangular(5, 10, 5))
     for i in range(sandGrainNumber):
@@ -109,7 +110,7 @@ def addParticles(app, x, y):
         gVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
         bVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
         signFlip = random.choice([-1, 1])
-        xVelocity = int(random.triangular(0, 4, 1)) * signFlip
+        xVelocity = int(random.triangular(0, 4, 0)) * signFlip
         yVelocity = int(random.random() * 8)
         newParticle = Particle(i, x, y, xVelocity, yVelocity, 
                         (255,100,100), (rVar,gVar,bVar), app.effectiveAppHeight, app.effectiveAppWidth)
@@ -123,18 +124,20 @@ def drawSand(app, canvas):
                                 fill=particle.color, width=0)
 
 def getCellBounds(app, row, col):
-    width = 10
     totalRows = app.effectiveAppHeight / app.sandGrainSize
     totalCols = app.effectiveAppWidth / app.sandGrainSize
     x0, y0 = row * app.sandGrainSize, col * app.sandGrainSize
     x1, y1 = x0 + app.sandGrainSize, y0 + app.sandGrainSize
     return x0,y0,x1,y1
 
+# change width parameter in the rectangle call here to turn the grid on/off
 def drawGrid(app, canvas):
     for row in range(app.effectiveAppWidth // app.sandGrainSize):
         for col in range(app.effectiveAppHeight // app.sandGrainSize):
             x0,y0,x1,y1 = getCellBounds(app, row, col)
-            canvas.create_rectangle(x0,y0,x1,y1,fill=app.sandCache[col][row])
+            color = app.sandCache[col][row]
+            if color != 'white':
+                canvas.create_rectangle(x0,y0,x1,y1,fill=color,width=0)
 
 def getCell(app, x, y):
     row = y // app.sandGrainSize
@@ -156,15 +159,21 @@ def timerFired(app):
             nextX = app.effectiveAppWidth // app.sandGrainSize - 1
         elif nextX < 0:
             nextX = 0
-        print(f"particle #{particle.particleNumber} current pos: ({particle.col},{particle.row})", end=' ')
-        print(f"next pos: ({nextX}, {nextY})", end=" ")
-        print(f"velocity: ({particle.xVelocity}, {particle.yVelocity})")
-        if nextY >= app.effectiveAppHeight // app.sandGrainSize:
+        if nextY > app.maxValuesPerCol[nextX]: 
+            nextY = app.maxValuesPerCol[nextX]
+        # the sand hit the bottom! remove the particle and color the background
+        if nextY >= app.effectiveAppHeight // app.sandGrainSize - 1: 
             app.sand.remove(particle)
-            app.sandCache[34][nextX] = 'blue'
+            app.sandCache[app.effectiveAppHeight // app.sandGrainSize - 1][nextX] = 'blue'
+            app.maxValuesPerCol[nextX] -= 1
             continue
-        if particle.canDrop:    
-            particle.drop()
+        # the sand hit other sand! remove the particle and color the background square
+        elif app.sandCache[nextY+1][nextX] != 'white': 
+            app.sandCache[nextY][nextX] = 'blue'
+            app.sand.remove(particle)
+            app.maxValuesPerCol[nextX] -= 1
+        # just go ahead and keep moving
+        particle.drop()
 
 def main():
     runApp(width=600, height=400)

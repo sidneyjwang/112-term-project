@@ -6,7 +6,7 @@ import time
 # this isn't sand
 ####################################
 
-# from the 112 course website
+# from the 112 course website:
 def rgbString(r, g, b):
     return f'#{r:02x}{g:02x}{b:02x}'
 
@@ -78,13 +78,16 @@ def appStarted(app):
     app.currentY = 0 # the y position of the mouse
     app.mouseIsPressed = False # boolean flag: is the mouse being held?
     app.maxValuesPerCol = {}
+    app.effectiveAppWidth = 500 # for experimentation purposes: make the window smaller
+    app.effectiveAppHeight = 350 # for experimentation purposes: make the window smaller
+    app.sandGrainSize = 10 # for experimenation purposes: make the sand actually visible
     for i in range(1, 501):
         app.maxValuesPerCol[i] = 300
 
 # update the mouse's x and y coordinates, and set the boolean to true
 def mousePressed(app, event):
     app.mouseIsPressed = True
-    app.currentX, app.currentY = event.x, event.y
+    app.currentX, app.currentY = getCell(app, event.y, event.x)
 
 # set boolean to false
 def mouseReleased(app, event):
@@ -92,11 +95,11 @@ def mouseReleased(app, event):
 
 # update the mouse coordinates when moved
 def mouseMoved(app, event):
-    app.currentX, app.currentY = event.x, event.y
+    app.currentX, app.currentY = getCell(app, event.y, event.x)
 
 # also update mouse coordinates when dragged
 def mouseDragged(app, event):
-    app.currentX, app.currentY = event.x, event.y
+    app.currentX, app.currentY = getCell(app, event.y, event.x)
 
 # when the mouse is pressed, create a shower of sand emerging from the point
 def addParticles(app, x, y):
@@ -107,20 +110,42 @@ def addParticles(app, x, y):
         bVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
         signFlip = random.choice([-1, 1])
         xVelocity = int(random.triangular(0, 4, 1)) * signFlip
-        yVelocity = random.random() * 8
+        yVelocity = random.random()**2 * 8
         newParticle = Particle(i, x, y, xVelocity, yVelocity, 
-                        (255,100,100), (rVar,gVar,bVar), app.height-100, app.width-100)
+                        (255,100,100), (rVar,gVar,bVar), app.effectiveAppHeight, app.effectiveAppWidth)
         app.sand.append(newParticle)
 
 # draw all of the sand objects        
 def drawSand(app, canvas):
     for particle in app.sand:
-        canvas.create_rectangle(particle.xPos-1, particle.yPos-1, 
-                                particle.xPos+1, particle.yPos+1, 
+        x0,y0,x1,y1 = getCellBounds(app, particle.xPos, particle.yPos)
+        print(x0,y0,x1,y1)
+        canvas.create_rectangle(x0,y0,x1,y1, 
                                 fill=particle.color, width=0)
 
+def getCellBounds(app, row, col):
+    width = 10
+    totalRows = app.effectiveAppHeight / app.sandGrainSize
+    totalCols = app.effectiveAppWidth / app.sandGrainSize
+    x0, y0 = row * app.sandGrainSize, col * app.sandGrainSize
+    x1, y1 = x0 + app.sandGrainSize, y0 + app.sandGrainSize
+    return x0,y0,x1,y1
+
+def drawGrid(app, canvas):
+    for row in range(app.effectiveAppWidth // app.sandGrainSize):
+        for col in range(app.effectiveAppHeight // app.sandGrainSize):
+            x0,y0,x1,y1 = getCellBounds(app, row, col)
+            canvas.create_rectangle(x0,y0,x1,y1)
+
+def getCell(app, x, y):
+    row = y // app.sandGrainSize
+    col = x // app.sandGrainSize
+    print(row, col)
+    return row, col
+
 def redrawAll(app, canvas):
-    canvas.create_rectangle(0, 0, 500, 300)
+    drawGrid(app, canvas)
+    canvas.create_rectangle(0, 0, app.effectiveAppWidth, app.effectiveAppHeight)
     drawSand(app, canvas)
 
 # create the particles
@@ -131,36 +156,46 @@ def timerFired(app):
         # at some point once everything is done, check up here if canSlide and 
         # canDrop are both false. if so, just continue; there's no point in going
         # through the rest of this.
-        x, y = app.sand[particle].getMovePosition()
-        if x > 500:
-            x = 500
-        elif x < 1:
-            x = 1
-        print(f'Particle #{particle}', 'Current position:', f'({app.sand[particle].xPos}, {app.sand[particle].yPos})')
-        print(f'Particle #{particle}', 'Next position:', f'({x}, {y})')
-        maxColValue = app.maxValuesPerCol[x]
+        nextX, nextY = app.sand[particle].getMovePosition()
+        if nextX > 500:
+            nextX = 500
+        elif nextX < 1:
+            nextX = 1
+        # print(f'Particle #{particle}', 'Current position:', f'({app.sand[particle].xPos}, {app.sand[particle].yPos})')
+        # print(f'Particle #{particle}', 'Next position:', f'({nextX}, {nextY})')
+        maxColValue = app.maxValuesPerCol[nextX]
         # the sand grain has reached as far down as it will go!
-        if y > maxColValue and app.sand[particle].canDrop:
-            app.sand[particle].yPos = maxColValue - 2
-            app.maxValuesPerCol[x] -= 2
-            app.sand[particle].canDrop = False
-            app.sand[particle].canSlide = True
-            print('this happened!')
-            # set the x velocity to either 1 or -1 in preparation for sliding
-            if app.sand[particle].xVelocity != 0:
-                app.sand[particle].xVelocity /= abs(app.sand[particle].xVelocity)
-        # canDrop starts True, canSlide starts false
-        # if canDrop is true:
-        if app.sand[particle].canDrop:
-            app.sand[particle].drop()
-        else:
-            print(f'Particle # {particle} made it to sliding state!')
-            # check if there's already a particle at the anticipated next position; if it is, set canSlide to true
-        # if app.sand[particle].canSlide:
-            # app.sand[particle].canDrop = False
-            # app.sand[particle].slide()
-            # check if it's reached the bottommost point that it can go to; if it is, set canSlide to false
-            # both should be false at this point
+        if app.sand[particle].canDrop:    
+            if nextY > maxColValue:
+                app.sand[particle].yPos = maxColValue - app.sandGrainSize
+                app.maxValuesPerCol[nextX] -= app.sandGrainSize
+                app.sand[particle].canDrop = False
+                app.sand[particle].canSlide = True
+                # set the x velocity to either 1 or -1 in preparation for sliding
+                if app.sand[particle].xVelocity != 0:
+                    app.sand[particle].xVelocity /= abs(app.sand[particle].xVelocity)
+                else:
+                    app.sand[particle].xVelocity = 1
+            # canDrop starts True, canSlide starts false
+            # if canDrop is true:
+            else:
+                app.sand[particle].drop()
+        # elif app.sand[particle].canSlide:
+        #     currentX = app.sand[particle].xPos
+        #     # slide!
+        #     currentMaxValue = app.maxValuesPerCol[currentX]
+        #     comparedValue = app.maxValuesPerCol[currentX + app.sand[particle].xVelocity]
+        #     print(f'Particle #{particle}: currentX: {currentX}, checkX: {currentX + app.sand[particle].xVelocity} currentMaxValue is {currentMaxValue}, compareValue is {comparedValue}')
+        #     if comparedValue > currentMaxValue:
+        #         print(f'Particle #{particle}: i done slided')
+        #         app.sand[particle].yPos = comparedValue
+        #         app.maxValuesPerCol[app.currentX + app.sand[particle].xVelocity] -= 2
+        #         app.sand[particle].xPos += app.sand[particle].xVelocity
+        #     else:
+        #         print(f"Particle #{particle}: i'm done sliding")
+        #         app.sand[particle].canSlide = False
+        #     # check if it's reached the bottommost point that it can go to; if it is, set canSlide to false
+        #     # both should be false at this point
 
 def main():
     runApp(width=600, height=400)

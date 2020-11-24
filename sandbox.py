@@ -6,6 +6,9 @@ import time
 # this isn't sand
 ####################################
 
+# this project uses cmu-112-graphics, which was taken from
+# https://www.cs.cmu.edu/~112/
+
 # from the 112 course website:
 def rgbString(r, g, b):
     return f'#{r:02x}{g:02x}{b:02x}'

@@ -75,7 +75,7 @@ class Particle:
 
 def appStarted(app):
     app.sand = [] # a list to keep track of all particle objects
-    app.timerDelay = 10 # put this at 10 when not debugging
+    app.timerDelay = 100 # put this at 10 when not debugging
     app.currentX = 0 # the x position of the mouse
     app.currentY = 0 # the y position of the mouse
     app.mouseIsPressed = False # boolean flag: is the mouse being held?

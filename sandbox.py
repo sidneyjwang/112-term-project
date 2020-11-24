@@ -72,7 +72,7 @@ class Particle:
 
 def appStarted(app):
     app.sand = [] # a list to keep track of all particle objects
-    app.timerDelay = 100 # put this at 10 when not debugging
+    app.timerDelay = 10 # put this at 10 when not debugging
     app.currentX = 0 # the x position of the mouse
     app.currentY = 0 # the y position of the mouse
     app.mouseIsPressed = False # boolean flag: is the mouse being held?
@@ -153,6 +153,39 @@ def redrawAll(app, canvas):
 def timerFired(app):    
     if app.mouseIsPressed:
         addParticles(app, app.currentX, app.currentY)
+    # slide!
+    
+    '''
+    for row in range(len(app.sandCache)):
+        for col in range(len(app.sandCache[0])):
+            # only move the colored cells
+            if app.sandCache[row][col] != 'white':
+                leftCol, rightCol = col-1, col+1
+                nextRow = row + 1
+                # check that the left index is in range
+                if (leftCol >= 0 and 
+                    nextRow < app.effectiveAppHeight // app.sandGrainSize):
+                    # if it is, is the south-west cell open? if so, move there!
+                    if app.sandCache[nextRow][leftCol] == 'white':
+                        print('slide left')
+                        print(f'col:{col}', f'leftCol:{leftCol}')
+                        app.sandCache[nextRow][leftCol] = app.sandCache[row][col]
+                        app.sandCache[row][col] = 'white'
+                        app.maxValuesPerCol[col] += 1
+                        app.maxValuesPerCol[leftCol] -= 1
+                        
+                if (rightCol < app.effectiveAppWidth // app.sandGrainSize and
+                nextRow < app.effectiveAppHeight // app.sandGrainSize):
+                    if app.sandCache[nextRow][rightCol] == 'white':
+                        print('slide right')
+                        app.sandCache[nextRow][rightCol] = app.sandCache[row][col]
+                        app.sandCache[row][col] = 'white'
+                        app.maxValuesPerCol[col] += 1
+                        app.maxValuesPerCol[rightCol] -= 1
+    '''
+    
+                        
+
     for particle in (app.sand):
         nextX, nextY = particle.getMovePosition()
         if nextX >= app.effectiveAppWidth // app.sandGrainSize:

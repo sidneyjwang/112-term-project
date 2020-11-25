@@ -60,14 +60,14 @@ class Particle:
     def checkLegalMove(self):
         if self.yVelocity >= Particle.MAX_VELOCITY:
             self.yVelocity = Particle.MAX_VELOCITY
-        if self.row >= Particle.HEIGHT // 10:
-            self.row = Particle.HEIGHT // 10 - 1
+        if self.row >= Particle.HEIGHT // 2:
+            self.row = Particle.HEIGHT // 2 - 1
             self.yVelocity = 0
             self.canDrop = False
             self.canSlide = False
         # revisit once sand piling starts:
-        if self.col >= Particle.WIDTH // 10:
-            self.col = Particle.WIDTH // 10 - 1
+        if self.col >= Particle.WIDTH // 2:
+            self.col = Particle.WIDTH // 2 - 1
             self.xVelocity = 0
         elif self.col < 0:
             self.col = 0
@@ -75,13 +75,13 @@ class Particle:
 
 def appStarted(app):
     app.sand = [] # a list to keep track of all particle objects
-    app.timerDelay = 100 # put this at 10 when not debugging
+    app.timerDelay = 10 # put this at 10 when not debugging
     app.currentX = 0 # the x position of the mouse
     app.currentY = 0 # the y position of the mouse
     app.mouseIsPressed = False # boolean flag: is the mouse being held?
     app.effectiveAppWidth = 500 # for experimentation purposes: make the window smaller
     app.effectiveAppHeight = 300 # for experimentation purposes: make the window smaller
-    app.sandGrainSize = 10 # for experimenation purposes: make the sand actually visible
+    app.sandGrainSize = 2 # for experimenation purposes: make the sand actually visible
     # keep track of the highest sand grain particle per column:
     app.maxValuesPerCol = [app.effectiveAppHeight // app.sandGrainSize-1] * (app.effectiveAppWidth // app.sandGrainSize)
     # sand grains that are no longer objects and have become part of the background
@@ -156,9 +156,7 @@ def redrawAll(app, canvas):
 def timerFired(app):    
     if app.mouseIsPressed:
         addParticles(app, app.currentX, app.currentY)
-    # slide!
-    
-    '''
+    # slide! 
     for row in range(len(app.sandCache)):
         for col in range(len(app.sandCache[0])):
             # only move the colored cells
@@ -185,9 +183,6 @@ def timerFired(app):
                         app.sandCache[row][col] = 'white'
                         app.maxValuesPerCol[col] += 1
                         app.maxValuesPerCol[rightCol] -= 1
-    '''
-    
-                        
 
     for particle in (app.sand):
         nextX, nextY = particle.getMovePosition()

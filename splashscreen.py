@@ -60,8 +60,8 @@ def timerFired(app):
 
 def redrawAll(app, canvas):
     # insert background image here
-    canvas.create_image(app.height, app.width / 2, 
-                        image=ImageTk.PhotoImage(app.background), anchor='n')
+    canvas.create_image(app.width / 2, app.height, 
+                        image=ImageTk.PhotoImage(app.background), anchor='s')
     canvas.create_text(app.center, app.titlePositionY, 
                         text='THISISNTSAND', font=("Avenir", 32))
     canvas.create_text(app.center, app.sandboxTextY, text='SANDBOX  >',

@@ -20,9 +20,7 @@ def mousePressed(app, event):
 def mouseDragged(app, event):
     app.oldMouseX, app.oldMouseY = app.mouseX, app.mouseY
     app.mouseX, app.mouseY = event.x, event.y
-    print('mouseX, mouseY:', app.mouseX, app.mouseY)
     linePoints = getLinePoints(app.oldMouseX, app.oldMouseY, app.mouseX, app.mouseY)
-    print('last point:', linePoints[-1])
     for x, y in linePoints:
         for horizontal in range(x-1, x+2):
             for vertical in range(y-1, y+2):
@@ -38,7 +36,6 @@ def getLinePoints(x0,y0,x1,y1):
         return [(x0, y1+i) for i in range(y0-y1+1)]
     # check to see if the slope is greater than 1:
     if abs(y1-y0) > abs(x1-x0):
-        print('thishappened')
         x0, y0 = y0, x0
         x1, y1 = y1, x1
         didSwitch = True

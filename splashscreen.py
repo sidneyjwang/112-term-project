@@ -63,7 +63,7 @@ def redrawAll(app, canvas):
     canvas.create_image(app.height, app.width / 2, 
                         image=ImageTk.PhotoImage(app.background), anchor='n')
     canvas.create_text(app.center, app.titlePositionY, 
-                        text='THISISNTSAND', font=("Avenir", 30))
+                        text='THISISNTSAND', font=("Avenir", 32))
     canvas.create_text(app.center, app.sandboxTextY, text='SANDBOX  >',
                         font=("Avenir", 24), fill=app.sandboxColor)
     canvas.create_text(app.center, app.pictureTextY, text='PICTURE  >',

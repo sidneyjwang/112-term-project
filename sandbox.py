@@ -19,8 +19,9 @@ class Particle:
     HEIGHT = 0
     WIDTH = 0
     TOTAL_PARTICLES = 0
+    PARTICLE_SIZE = 2
     def __init__(self, particleNumber, col, row, xVelocity, yVelocity, intendedColor, 
-                colorVariation, height, width):
+                colorVariation, height, width, particleSize=2):
         self.particleNumber = particleNumber
         self.col = col
         self.row = row
@@ -42,6 +43,7 @@ class Particle:
         Particle.HEIGHT = height
         Particle.WIDTH = width
         Particle.TOTAL_PARTICLES += 1
+        Particle.PARTICLE_SIZE = particleSize
 
     def getMovePosition(self):
         x, y = int(self.col + self.xVelocity), int(self.row + self.yVelocity)
@@ -60,14 +62,14 @@ class Particle:
     def checkLegalMove(self):
         if self.yVelocity >= Particle.MAX_VELOCITY:
             self.yVelocity = Particle.MAX_VELOCITY
-        if self.row >= Particle.HEIGHT // 2:
-            self.row = Particle.HEIGHT // 2 - 1
+        if self.row >= Particle.HEIGHT // Particle.PARTICLE_SIZE:
+            self.row = Particle.HEIGHT // Particle.PARTICLE_SIZE - 1
             self.yVelocity = 0
             self.canDrop = False
             self.canSlide = False
         # revisit once sand piling starts:
-        if self.col >= Particle.WIDTH // 2:
-            self.col = Particle.WIDTH // 2 - 1
+        if self.col >= Particle.WIDTH // Particle.PARTICLE_SIZE:
+            self.col = Particle.WIDTH // Particle.PARTICLE_SIZE - 1
             self.xVelocity = 0
         elif self.col < 0:
             self.col = 0
@@ -81,7 +83,7 @@ def appStarted(app):
     app.mouseIsPressed = False # boolean flag: is the mouse being held?
     app.effectiveAppWidth = 500 # for experimentation purposes: make the window smaller
     app.effectiveAppHeight = 300 # for experimentation purposes: make the window smaller
-    app.sandGrainSize = 2 # for experimenation purposes: make the sand actually visible
+    app.sandGrainSize = 10 # for experimenation purposes: make the sand actually visible
     # keep track of the highest sand grain particle per column:
     app.maxValuesPerCol = [app.effectiveAppHeight // app.sandGrainSize-1] * (app.effectiveAppWidth // app.sandGrainSize)
     # sand grains that are no longer objects and have become part of the background
@@ -116,7 +118,8 @@ def addParticles(app, x, y):
         xVelocity = int(random.triangular(0, 4, 0)) * signFlip
         yVelocity = int(random.random() * 8)
         newParticle = Particle(i, x, y, xVelocity, yVelocity, 
-                        (255,100,100), (rVar,gVar,bVar), app.effectiveAppHeight, app.effectiveAppWidth)
+                        (255,100,100), (rVar,gVar,bVar), app.effectiveAppHeight, 
+                        app.effectiveAppWidth, app.sandGrainSize)
         app.sand.append(newParticle)
 
 # draw all of the sand objects        

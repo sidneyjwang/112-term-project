@@ -2,6 +2,7 @@ from cmu_112_graphics import *
 import random
 import time
 import string
+from particleClass import *
 
 ####################################
 # this isn't sand
@@ -9,10 +10,6 @@ import string
 
 # this project uses cmu-112-graphics, which was taken from
 # https://www.cs.cmu.edu/~112/
-
-# from the 112 course website:
-def rgbString(r, g, b):
-    return f'#{r:02x}{g:02x}{b:02x}'
 
 # takes in a rgbString and converts it to RGB
 def rgbStringtoRGB(rgbString):
@@ -49,65 +46,6 @@ def appStarted(app):
     app.leftcounter = 0
     app.rightcounter = 0
     app.timerIsRunning = False
-
-class Particle:
-    GRAVITY = 1.5
-    MAX_VELOCITY = 15
-    HEIGHT = 0
-    WIDTH = 0
-    TOTAL_PARTICLES = 0
-    PARTICLE_SIZE = 2
-    def __init__(self, particleNumber, col, row, xVelocity, yVelocity, intendedColor, 
-                colorVariation, height, width, particleSize=2):
-        self.particleNumber = particleNumber
-        self.col = col
-        self.row = row
-        self.yVelocity = yVelocity
-        self.time = 0
-        self.xVelocity = xVelocity
-        self.R = intendedColor[0] + colorVariation[0]
-        self.G = intendedColor[1] + colorVariation[1]
-        self.B = intendedColor[1] + colorVariation[2]
-        if self.R > 255: self.R = 255
-        elif self.R < 0: self.R = 0
-        if self.G > 255: self.G = 255
-        elif self.G < 0: self.G = 0
-        if self.B > 255: self.B = 255
-        elif self.B < 0: self.B = 0
-        self.color = rgbString(self.R, self.G, self.B)
-        self.canSlide = False
-        Particle.HEIGHT = height
-        Particle.WIDTH = width
-        Particle.TOTAL_PARTICLES += 1
-        Particle.PARTICLE_SIZE = particleSize
-
-    def getMovePosition(self):
-        x, y = int(self.col + self.xVelocity), int(self.row + self.yVelocity)
-        return (x, y)
-    
-    # drops the sand particle
-    def drop(self):
-        self.row += int(self.yVelocity)
-        self.yVelocity += int(Particle.GRAVITY * self.time)
-        self.time += 1
-        self.col += int(self.xVelocity)
-        self.checkLegalMove()
-
-    # check if the proposed move would put a grain inside another one, or move
-    # off the screen; if so, undoes the move
-    def checkLegalMove(self):
-        if self.yVelocity >= Particle.MAX_VELOCITY:
-            self.yVelocity = Particle.MAX_VELOCITY
-        if self.row >= Particle.HEIGHT // Particle.PARTICLE_SIZE:
-            self.row = Particle.HEIGHT // Particle.PARTICLE_SIZE - 1
-            self.yVelocity = 0
-        # revisit once sand piling starts:
-        if self.col >= Particle.WIDTH // Particle.PARTICLE_SIZE:
-            self.col = Particle.WIDTH // Particle.PARTICLE_SIZE - 1
-            self.xVelocity = 0
-        elif self.col < 0:
-            self.col = 0
-            self.xVelocity = 0
 
 # update the mouse's x and y coordinates, and set the mouseIsPressed boolean to true
 def mousePressed(app, event):
@@ -202,7 +140,6 @@ def doStep(app):
         x0,y0,x1,y1 = getCellBounds(app, nextY, nextX)
         # the sand hit the bottom! remove the particle and color the background
         if nextY >= app.effectiveAppHeight // app.sandGrainSize - 1:
-            print('hit bottom') 
             app.sand.remove(particle)
             shouldContinue = False
             changePixelsGivenCell(app, app.effectiveAppHeight // app.sandGrainSize - 1, 
@@ -211,11 +148,9 @@ def doStep(app):
             continue
         # the sand hit other sand! it's okay to slide now
         elif app.background.getpixel((x0,y1)) != (0,0,0) and particle.canSlide == False: 
-            print('ready to slide!')
             particle.canSlide = True
         # the particle is able to slide
         if particle.canSlide:
-            print('entering the canSlide if statement...')
             nextLX = nextX - 1
             nextRX = nextX + 1
             nextSY = nextY + 1
@@ -223,36 +158,26 @@ def doStep(app):
                 nextRX = app.effectiveAppWidth // app.sandGrainSize - 1
             if nextLX <= 0:
                 nextLX = 0
-            print(f'row, col: {particle.row}, {particle.col}')
-            print(f'nextY, nextX: {nextY}, {nextX}')
-            print(f'nextRow, nextLCol, nextRCol: {nextSY}, {nextLX}, {nextRX}')
             lx0,ly0,lx1,ly1 = getCellBounds(app, nextSY, nextLX)
             rx0,ry0,rx1,ry1 = getCellBounds(app, nextSY, nextRX)
             directions = []
             g = app.sandGrainSize // 2
-            print(f'lx0+1, ly1-1: {lx0+1}, {ly1-1}')
-            print(f'rx0+1, ry1-1: {rx0+1}, {ry1-1}')
-            print(f'left pixel value: {app.background.getpixel((lx0+g,ly1-g))}')
-            print(f'right pixel value: {app.background.getpixel((rx0+g,ry1-g))}')
-            print(f'length of app.sand: {len(app.sand)}')
+            # slide left
             if (nextLX >= 0 and app.background.getpixel((lx0+g,ly1-g)) == (0,0,0) and 
                 nextSY <= app.maxValuesPerCol[nextLX]):
-                print('slide left!')
                 directions.append((nextSY, nextLX))
-            # if rightposition doesn't move out of grid and isn't occupied: move there
+            # slide right
             if (nextRX < app.effectiveAppWidth // app.sandGrainSize and 
                 app.background.getpixel((rx0+g,ry1-g)) == (0,0,0) and
                 nextSY <= app.maxValuesPerCol[nextRX]):
-                print('slide right!')
                 directions.append((nextSY, nextRX))
-            # otherwise: stay and stack
+            # if it can't do either, stay in place
             if len(directions) == 0:
-                print('no slide')
                 changePixelsGivenCell(app, nextY, nextX, (100,100,255))
                 app.maxValuesPerCol[nextX] -= 1
                 app.sand.remove(particle)
                 shouldContinue = False
-            # slide!
+            # pick a random direction to slide:
             else:
                 randomIndex = random.choice(directions)
                 particle.row, particle.col = nextSY, randomIndex[1]
@@ -261,7 +186,6 @@ def doStep(app):
         # didn't hit anything; just go ahead and keep moving
         if not particle.canSlide:
             particle.drop()
-            print('particle dropped')
         if shouldContinue:
             i += 1
 

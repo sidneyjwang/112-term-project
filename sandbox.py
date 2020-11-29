@@ -38,9 +38,9 @@ def appStarted(app):
     app.currentX = 0 # the x position of the mouse
     app.currentY = 0 # the y position of the mouse
     app.mouseIsPressed = False # boolean flag: is the mouse being held?
-    app.effectiveAppWidth = 500 # for experimentation purposes: make the window smaller
-    app.effectiveAppHeight = 300 # for experimentation purposes: make the window smaller
-    app.sandGrainSize = 10 # for experimenation purposes: make the sand actually visible
+    app.effectiveAppWidth = app.width # for experimentation purposes: make the window smaller
+    app.effectiveAppHeight = app.height # for experimentation purposes: make the window smaller
+    app.sandGrainSize = 2 # for experimenation purposes: make the sand actually visible
     # keep track of the highest sand grain particle per column:
     app.maxValuesPerCol = [app.effectiveAppHeight // app.sandGrainSize-1] * (app.effectiveAppWidth // app.sandGrainSize)
     # sand grains that are no longer objects and have become part of the background
@@ -129,13 +129,13 @@ def mouseDragged(app, event):
 # when the mouse is pressed, create a shower of sand emerging from the point
 # modify here for testing purposes if a single grain is needed instead of a shower
 def addParticles(app, x, y):
-    sandGrainNumber = 1 # int(random.triangular(5, 10, 5))
+    sandGrainNumber = int(random.triangular(5, 10, 5))
     for i in range(sandGrainNumber):
         rVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
         gVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
         bVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
         signFlip = random.choice([-1, 1])
-        xVelocity = 0 # int(random.triangular(0, 4, 1)) * signFlip
+        xVelocity = int(random.triangular(0, 3, 0.5)) * signFlip
         yVelocity = int(random.random() * 8)
         newParticle = Particle(i, x, y, xVelocity, yVelocity, 
                         (255,100,100), (rVar,gVar,bVar), app.effectiveAppHeight, 
@@ -168,8 +168,8 @@ def redrawAll(app, canvas):
 # given a certain cell, change the background pixels in that cell to be a color
 def changePixelsGivenCell(app, row, col, color):
     x0,y0,x1,y1 = getCellBounds(app, row, col)
-    for x in range(x0, x1+1):
-        for y in range(y0, y1+1):
+    for x in range(x0, x1):
+        for y in range(y0, y1):
             app.background.putpixel((x,y), color)
 
 # create the particles
@@ -188,7 +188,10 @@ def keyPressed(app, event):
         app.timerIsRunning = not app.timerIsRunning
 
 def doStep(app):
-    for particle in (app.sand):
+    i = 0
+    while i < len(app.sand):
+        particle = app.sand[i]
+        shouldContinue = True
         nextX, nextY = particle.getMovePosition()
         if nextX >= app.effectiveAppWidth // app.sandGrainSize:
             nextX = app.effectiveAppWidth // app.sandGrainSize - 1
@@ -201,6 +204,7 @@ def doStep(app):
         if nextY >= app.effectiveAppHeight // app.sandGrainSize - 1:
             print('hit bottom') 
             app.sand.remove(particle)
+            shouldContinue = False
             changePixelsGivenCell(app, app.effectiveAppHeight // app.sandGrainSize - 1, 
                     nextX, (100,100,255))
             app.maxValuesPerCol[nextX] -= 1
@@ -220,18 +224,24 @@ def doStep(app):
             if nextLX <= 0:
                 nextLX = 0
             print(f'row, col: {particle.row}, {particle.col}')
+            print(f'nextY, nextX: {nextY}, {nextX}')
             print(f'nextRow, nextLCol, nextRCol: {nextSY}, {nextLX}, {nextRX}')
             lx0,ly0,lx1,ly1 = getCellBounds(app, nextSY, nextLX)
             rx0,ry0,rx1,ry1 = getCellBounds(app, nextSY, nextRX)
-            # if leftposition doesn't move out of grid and isn't occupied: move there
             directions = []
-            if (nextLX >= 0 and app.background.getpixel((lx0+1,ly1-1)) == (0,0,0) and 
+            g = app.sandGrainSize // 2
+            print(f'lx0+1, ly1-1: {lx0+1}, {ly1-1}')
+            print(f'rx0+1, ry1-1: {rx0+1}, {ry1-1}')
+            print(f'left pixel value: {app.background.getpixel((lx0+g,ly1-g))}')
+            print(f'right pixel value: {app.background.getpixel((rx0+g,ry1-g))}')
+            print(f'length of app.sand: {len(app.sand)}')
+            if (nextLX >= 0 and app.background.getpixel((lx0+g,ly1-g)) == (0,0,0) and 
                 nextSY <= app.maxValuesPerCol[nextLX]):
                 print('slide left!')
                 directions.append((nextSY, nextLX))
             # if rightposition doesn't move out of grid and isn't occupied: move there
             if (nextRX < app.effectiveAppWidth // app.sandGrainSize and 
-                app.background.getpixel((rx0+1,ry1-1)) == (0,0,0) and
+                app.background.getpixel((rx0+g,ry1-g)) == (0,0,0) and
                 nextSY <= app.maxValuesPerCol[nextRX]):
                 print('slide right!')
                 directions.append((nextSY, nextRX))
@@ -241,13 +251,18 @@ def doStep(app):
                 changePixelsGivenCell(app, nextY, nextX, (100,100,255))
                 app.maxValuesPerCol[nextX] -= 1
                 app.sand.remove(particle)
+                shouldContinue = False
             # slide!
             else:
                 randomIndex = random.choice(directions)
                 particle.row, particle.col = nextSY, randomIndex[1]
+                particle.yVelocity = 1
+                particle.xVelocity = 0
         # didn't hit anything; just go ahead and keep moving
         if not particle.canSlide:
             particle.drop()
             print('particle dropped')
+        if shouldContinue:
+            i += 1
 
 runApp(width=600, height=400)

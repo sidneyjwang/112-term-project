@@ -29,20 +29,8 @@ def rgbStringtoRGB(rgbString):
 def convertHexDigitToBaseTen(digit):
     if digit in string.digits:
         return int(digit)
-    elif digit == 'a':
-        return 10
-    elif digit == 'b':
-        return 11
-    elif digit == 'c':
-        return 12
-    elif digit == 'd':
-        return 13
-    elif digit == 'e':
-        return 14
-    elif digit == 'f':
-        return 15
-
-# return a tuple of blah shit
+    else:
+        return string.ascii_lowercase.find(digit) + 10
 
 def appStarted(app):
     app.sand = [] # a list to keep track of all particle objects
@@ -56,8 +44,11 @@ def appStarted(app):
     # keep track of the highest sand grain particle per column:
     app.maxValuesPerCol = [app.effectiveAppHeight // app.sandGrainSize-1] * (app.effectiveAppWidth // app.sandGrainSize)
     # sand grains that are no longer objects and have become part of the background
-    app.sandCache = [['white'] * (app.effectiveAppWidth // app.sandGrainSize) for i in range(app.effectiveAppHeight // app.sandGrainSize)]
     app.background = app.loadImage('blacktestbackground.png')
+
+    app.leftcounter = 0
+    app.rightcounter = 0
+    app.timerIsRunning = False
 
 class Particle:
     GRAVITY = 1.5
@@ -84,7 +75,7 @@ class Particle:
         if self.B > 255: self.B = 255
         elif self.B < 0: self.B = 0
         self.color = rgbString(self.R, self.G, self.B)
-        self.deleteParticle = False
+        self.canSlide = False
         Particle.HEIGHT = height
         Particle.WIDTH = width
         Particle.TOTAL_PARTICLES += 1
@@ -138,13 +129,13 @@ def mouseDragged(app, event):
 # when the mouse is pressed, create a shower of sand emerging from the point
 # modify here for testing purposes if a single grain is needed instead of a shower
 def addParticles(app, x, y):
-    sandGrainNumber = 1 #int(random.triangular(5, 10, 5))
+    sandGrainNumber = 1 # int(random.triangular(5, 10, 5))
     for i in range(sandGrainNumber):
         rVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
         gVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
         bVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
         signFlip = random.choice([-1, 1])
-        xVelocity = 0 #int(random.triangular(0, 4, 1)) * signFlip
+        xVelocity = 0 # int(random.triangular(0, 4, 1)) * signFlip
         yVelocity = int(random.random() * 8)
         newParticle = Particle(i, x, y, xVelocity, yVelocity, 
                         (255,100,100), (rVar,gVar,bVar), app.effectiveAppHeight, 
@@ -154,25 +145,14 @@ def addParticles(app, x, y):
 # draw all of the sand objects        
 def drawSand(app, canvas):
     for particle in app.sand:
-        x0,y0,x1,y1 = getCellBounds(app, particle.col, particle.row)
+        x0,y0,x1,y1 = getCellBounds(app, particle.row, particle.col)
         canvas.create_rectangle(x0,y0,x1,y1, 
                                 fill=particle.color, width=0)
 
 def getCellBounds(app, row, col):
-    totalRows = app.effectiveAppHeight / app.sandGrainSize
-    totalCols = app.effectiveAppWidth / app.sandGrainSize
-    x0, y0 = row * app.sandGrainSize, col * app.sandGrainSize
+    x0, y0 = col * app.sandGrainSize, row * app.sandGrainSize
     x1, y1 = x0 + app.sandGrainSize, y0 + app.sandGrainSize
     return x0,y0,x1,y1
-
-# change width parameter in the rectangle call here to turn the grid on/off
-def drawGrid(app, canvas):
-    for row in range(app.effectiveAppWidth // app.sandGrainSize):
-        for col in range(app.effectiveAppHeight // app.sandGrainSize):
-            x0,y0,x1,y1 = getCellBounds(app, row, col)
-            color = app.sandCache[col][row]
-            if color != 'white':
-                canvas.create_rectangle(x0,y0,x1,y1,fill=color,width=0)
 
 def getCell(app, x, y):
     row = y // app.sandGrainSize
@@ -188,8 +168,8 @@ def redrawAll(app, canvas):
 # given a certain cell, change the background pixels in that cell to be a color
 def changePixelsGivenCell(app, row, col, color):
     x0,y0,x1,y1 = getCellBounds(app, row, col)
-    for x in range(x0, x1):
-        for y in range(y0, y1):
+    for x in range(x0, x1+1):
+        for y in range(y0, y1+1):
             app.background.putpixel((x,y), color)
 
 # create the particles
@@ -197,7 +177,17 @@ def timerFired(app):
     # when the mouse is pressed, create shower of particles
     if app.mouseIsPressed:
         addParticles(app, app.currentX, app.currentY)
+    if app.timerIsRunning:
+        doStep(app)
     # go through each active particle and move it accordingly
+
+def keyPressed(app, event):
+    if event.key == 's':
+        doStep(app)
+    if event.key == 'Space':
+        app.timerIsRunning = not app.timerIsRunning
+
+def doStep(app):
     for particle in (app.sand):
         nextX, nextY = particle.getMovePosition()
         if nextX >= app.effectiveAppWidth // app.sandGrainSize:
@@ -206,45 +196,58 @@ def timerFired(app):
             nextX = 0
         if nextY > app.maxValuesPerCol[nextX]: 
             nextY = app.maxValuesPerCol[nextX]
-        x0,y0,x1,y1 = getCellBounds(app, nextX, nextY)
+        x0,y0,x1,y1 = getCellBounds(app, nextY, nextX)
         # the sand hit the bottom! remove the particle and color the background
         if nextY >= app.effectiveAppHeight // app.sandGrainSize - 1:
             print('hit bottom') 
             app.sand.remove(particle)
-            changePixelsGivenCell(app, nextX, 
-                    app.effectiveAppHeight // app.sandGrainSize - 1, (100,100,255))
+            changePixelsGivenCell(app, app.effectiveAppHeight // app.sandGrainSize - 1, 
+                    nextX, (100,100,255))
             app.maxValuesPerCol[nextX] -= 1
-        # the sand hit other sand! remove the particle and color the background square
-        # also, slide if applicable
-        elif app.background.getpixel((x0,y1)) != (0,0,0): 
-            nextLX, nextRX = nextX - 1, nextX + 1
-            print(f'nextX: {nextX}, nextLX: {nextLX}, nextRX: {nextRX}')
-            if nextLX < 0 or nextRX >= app.effectiveAppWidth // app.sandGrainSize:
-                changePixelsGivenCell(app, nextX, nextY, (100,100,255))
-                app.sand.remove(particle)
-                app.maxValuesPerCol[nextX] -= 1
-                continue
-            nextLY, nextRY = app.maxValuesPerCol[nextLX], app.maxValuesPerCol[nextRX]
-            print(f'nextY: {nextY}, nextLY: {nextLY}, nextRY: {nextRY}')
-            if nextLY > nextY:
-                # slide left
-                print('left')
-                changePixelsGivenCell(app, nextLX, nextLY, (100,100,255))
-                app.sand.remove(particle)
-                app.maxValuesPerCol[nextLX] -= 1
-            elif nextRY > nextY:
-                # slide right
-                print('right')
-                changePixelsGivenCell(app, nextRX, nextRY, (100,100,255))
-                app.sand.remove(particle)
-                app.maxValuesPerCol[nextRX] -= 1
-            else:
-                # don't slide
+            continue
+        # the sand hit other sand! it's okay to slide now
+        elif app.background.getpixel((x0,y1)) != (0,0,0) and particle.canSlide == False: 
+            print('ready to slide!')
+            particle.canSlide = True
+        # the particle is able to slide
+        if particle.canSlide:
+            print('entering the canSlide if statement...')
+            nextLX = nextX - 1
+            nextRX = nextX + 1
+            nextSY = nextY + 1
+            if nextRX >= app.effectiveAppWidth // app.sandGrainSize - 1:
+                nextRX = app.effectiveAppWidth // app.sandGrainSize - 1
+            if nextLX <= 0:
+                nextLX = 0
+            print(f'row, col: {particle.row}, {particle.col}')
+            print(f'nextRow, nextLCol, nextRCol: {nextSY}, {nextLX}, {nextRX}')
+            lx0,ly0,lx1,ly1 = getCellBounds(app, nextSY, nextLX)
+            rx0,ry0,rx1,ry1 = getCellBounds(app, nextSY, nextRX)
+            # if leftposition doesn't move out of grid and isn't occupied: move there
+            directions = []
+            if (nextLX >= 0 and app.background.getpixel((lx0+1,ly1-1)) == (0,0,0) and 
+                nextSY <= app.maxValuesPerCol[nextLX]):
+                print('slide left!')
+                directions.append((nextSY, nextLX))
+            # if rightposition doesn't move out of grid and isn't occupied: move there
+            if (nextRX < app.effectiveAppWidth // app.sandGrainSize and 
+                app.background.getpixel((rx0+1,ry1-1)) == (0,0,0) and
+                nextSY <= app.maxValuesPerCol[nextRX]):
+                print('slide right!')
+                directions.append((nextSY, nextRX))
+            # otherwise: stay and stack
+            if len(directions) == 0:
                 print('no slide')
-                changePixelsGivenCell(app, nextX, nextY, (100,100,255))
-                app.sand.remove(particle)
+                changePixelsGivenCell(app, nextY, nextX, (100,100,255))
                 app.maxValuesPerCol[nextX] -= 1
+                app.sand.remove(particle)
+            # slide!
+            else:
+                randomIndex = random.choice(directions)
+                particle.row, particle.col = nextSY, randomIndex[1]
         # didn't hit anything; just go ahead and keep moving
-        particle.drop()
+        if not particle.canSlide:
+            particle.drop()
+            print('particle dropped')
 
 runApp(width=600, height=400)

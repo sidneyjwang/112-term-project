@@ -39,7 +39,7 @@ class sandbox(Mode):
         # keep track of the highest sand grain particle per column:
         mode.maxValuesPerCol = [mode.effectiveAppHeight // mode.sandGrainSize-1] * (mode.effectiveAppWidth // mode.sandGrainSize)
         # sand grains that are no longer objects and have become part of the background
-        mode.background = mode.loadImage('blacktestbackground.png')
+        mode.Sbackground = mode.loadImage('whiteBackground.png')
         mode.timerIsRunning = True
 
     # update the mouse's x and y coordinates, and set the mouseIsPressed boolean to true
@@ -64,15 +64,13 @@ class sandbox(Mode):
     def addParticles(mode, x, y):
         sandGrainNumber = int(random.triangular(5, 10, 5))
         for i in range(sandGrainNumber):
-            rVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
-            gVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
-            bVar = int(random.triangular(0, 25, 5)) * random.choice([-1, 1])
+            colorVar = int(random.triangular(0, 15, 1)) * random.choice([-1, 1])
             signFlip = random.choice([-1, 1])
             xVelocity = int(random.triangular(0, 3, 0.5)) * signFlip
             yVelocity = int(random.random() * 8)
             newParticle = Particle(i, x, y, xVelocity, yVelocity, 
-                            (255,100,100), (rVar,gVar,bVar), mode.effectiveAppHeight, 
-                            mode.effectiveAppWidth, mode.sandGrainSize)
+                            mode.app.sandColor, (colorVar,colorVar,colorVar), 
+                            mode.effectiveAppHeight, mode.effectiveAppWidth, mode.sandGrainSize)
             mode.sand.append(newParticle)
 
     # draw all of the sand objects        
@@ -94,7 +92,7 @@ class sandbox(Mode):
 
     def redrawAll(mode, canvas):
         canvas.create_image(mode.width/2, mode.height/2,  
-                            image=ImageTk.PhotoImage(mode.background))
+                            image=ImageTk.PhotoImage(mode.Sbackground))
         canvas.create_rectangle(0, 0, mode.effectiveAppWidth, mode.effectiveAppHeight, outline='white')
         mode.drawSand(canvas)
 
@@ -103,7 +101,7 @@ class sandbox(Mode):
         x0,y0,x1,y1 = mode.getCellBounds(row, col)
         for x in range(x0, x1):
             for y in range(y0, y1):
-                mode.background.putpixel((x,y), color)
+                mode.Sbackground.putpixel((x,y), color)
 
     # create the particles
     def timerFired(mode):
@@ -138,11 +136,11 @@ class sandbox(Mode):
                 mode.sand.remove(particle)
                 shouldContinue = False
                 mode.changePixelsGivenCell(mode.effectiveAppHeight // mode.sandGrainSize - 1, 
-                        nextX, (100,100,255))
+                        nextX, (particle.R, particle.G, particle.B))
                 mode.maxValuesPerCol[nextX] -= 1
                 continue
             # the sand hit other sand! it's okay to slide now
-            elif mode.background.getpixel((x0,y1)) != (0,0,0) and particle.canSlide == False: 
+            elif mode.Sbackground.getpixel((x0,y1)) != (255,255,255) and particle.canSlide == False: 
                 particle.canSlide = True
             # the particle is able to slide
             if particle.canSlide:
@@ -158,17 +156,17 @@ class sandbox(Mode):
                 directions = []
                 g = mode.sandGrainSize // 2
                 # slide left
-                if (nextLX >= 0 and mode.background.getpixel((lx0+g,ly1-g)) == (0,0,0) and 
+                if (nextLX >= 0 and mode.Sbackground.getpixel((lx0+g,ly1-g)) == (255,255,255) and 
                     nextSY <= mode.maxValuesPerCol[nextLX]):
                     directions.append((nextSY, nextLX))
                 # slide right
                 if (nextRX < mode.effectiveAppWidth // mode.sandGrainSize and 
-                    mode.background.getpixel((rx0+g,ry1-g)) == (0,0,0) and
+                    mode.Sbackground.getpixel((rx0+g,ry1-g)) == (255,255,255) and
                     nextSY <= mode.maxValuesPerCol[nextRX]):
                     directions.append((nextSY, nextRX))
                 # if it can't do either, stay in place
                 if len(directions) == 0:
-                    mode.changePixelsGivenCell(nextY, nextX, (100,100,255))
+                    mode.changePixelsGivenCell(nextY, nextX, (particle.R, particle.G, particle.B))
                     mode.maxValuesPerCol[nextX] -= 1
                     mode.sand.remove(particle)
                     shouldContinue = False

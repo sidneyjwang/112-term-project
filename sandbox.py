@@ -63,7 +63,7 @@ class sandbox(Mode):
     def addParticles(mode, x, y):
         sandGrainNumber = int(random.triangular(5, 10, 5))
         for i in range(sandGrainNumber):
-            colorVar = int(random.triangular(0, 15, 1)) * random.choice([-1, 1])
+            colorVar = int(random.triangular(0, 10, 1)) * random.choice([-1, 1])
             signFlip = random.choice([-1, 1])
             xVelocity = int(random.triangular(0, 3, 0.5)) * signFlip
             yVelocity = int(random.random() * 8)

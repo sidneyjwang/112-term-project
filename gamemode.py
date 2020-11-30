@@ -46,15 +46,15 @@ class game(Mode):
     def appStarted(mode):
         mode.sand = [] # a list to keep track of all particle objects
         mode.timerDelay = 5 # put this at 5 when not debugging
-        mode.mouseMovedDelay = 1 # put this at 1 for line drawing purposes
+        mode.mouseMovedDelay = 5 # put this at 1 for line drawing purposes
         mode.mouseX, mode.mouseY = 0, 0 # keep track of current mouse coordinates
         mode.oldMouseX, mode.oldMouseY = 0, 0 # keep track of old mouse coordinates
         mode.spaceIsPressed = False # boolean flag: is the mouse being held?
         mode.effectiveAppWidth = mode.width # for experimentation purposes: make the window smaller
         mode.effectiveAppHeight = mode.height # for experimentation purposes: make the window smaller
         mode.sandGrainSize = 2 # for experimenation purposes: make the sand actually visible
-        mode.sandX = 25 # where is the sand being dispensed from?
-        mode.sandY = 25 # see above
+        mode.sandX = 0 # where is the sand being dispensed from?
+        mode.sandY = 0 # see above
         # keep track of the highest sand grain particle per column:
         mode.maxValuesPerCol = [mode.effectiveAppHeight // mode.sandGrainSize-1] * (mode.effectiveAppWidth // mode.sandGrainSize)
         # sand grains that are no longer objects and have become part of the background

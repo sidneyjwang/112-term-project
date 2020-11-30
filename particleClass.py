@@ -24,11 +24,11 @@ class Particle:
         self.G = intendedColor[1] + colorVariation[1]
         self.B = intendedColor[2] + colorVariation[2]
         if self.R > 254: self.R = 254
-        elif self.R < 0: self.R = 0
+        elif self.R < 1: self.R = 1
         if self.G > 254: self.G = 254
-        elif self.G < 0: self.G = 0
+        elif self.G < 1: self.G = 1
         if self.B > 254: self.B = 254
-        elif self.B < 0: self.B = 0
+        elif self.B < 1: self.B = 1
         self.color = rgbString(self.R, self.G, self.B)
         self.canSlide = False
         Particle.HEIGHT = height

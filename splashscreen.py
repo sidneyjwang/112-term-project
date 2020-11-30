@@ -1,7 +1,8 @@
-from cmu_112_graphics import *
+#####################################
+# splash screen
+#####################################
 
-# this project uses cmu-112-graphics, which was taken from
-# https://www.cs.cmu.edu/~112/
+from cmu_112_graphics import *
 
 # from the 112 course website:
 def rgbString(r, g, b):
@@ -41,6 +42,7 @@ class splashscreen(Mode):
         mode.gameTextY-mode.textHeight < mode.mouseY < mode.gameTextY+mode.textHeight):
             # replace with game mode
             print('game!')
+            mode.app.setActiveMode(mode.app.gameMode)
 
     def timerFired(mode):
         if (mode.center-mode.sandboxWidth < mode.mouseX < mode.center+mode.sandboxWidth and

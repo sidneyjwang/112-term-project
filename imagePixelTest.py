@@ -26,7 +26,6 @@ def mouseDragged(app, event):
             for vertical in range(y-1, y+2):
                 app.background.putpixel((horizontal,vertical),(255,255,255))
 
-
 def getLinePoints(x0,y0,x1,y1):
     didSwitch = False
     # if the line is vertical:

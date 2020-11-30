@@ -40,7 +40,6 @@ class sandbox(Mode):
         mode.maxValuesPerCol = [mode.effectiveAppHeight // mode.sandGrainSize-1] * (mode.effectiveAppWidth // mode.sandGrainSize)
         # sand grains that are no longer objects and have become part of the background
         mode.Sbackground = mode.loadImage('whiteBackground.png')
-        mode.timerIsRunning = True
 
     # update the mouse's x and y coordinates, and set the mouseIsPressed boolean to true
     def mousePressed(mode, event):
@@ -108,15 +107,12 @@ class sandbox(Mode):
         # when the mouse is pressed, create shower of particles
         if mode.mouseIsPressed:
             mode.addParticles(mode.currentX, mode.currentY)
-        if mode.timerIsRunning:
-            mode.doStep()
+        mode.doStep()
         # go through each active particle and move it accordingly
 
     def keyPressed(mode, event):
-        if event.key == 's':
-            mode.doStep()
         if event.key == 'Space':
-            mode.timerIsRunning = not mode.timerIsRunning
+            mode.app.setActiveMode(mode.app.gradientMode)
 
     def doStep(mode):
         i = 0

@@ -22,12 +22,12 @@ class Particle:
         self.xVelocity = xVelocity
         self.R = intendedColor[0] + colorVariation[0]
         self.G = intendedColor[1] + colorVariation[1]
-        self.B = intendedColor[1] + colorVariation[2]
-        if self.R > 255: self.R = 255
+        self.B = intendedColor[2] + colorVariation[2]
+        if self.R > 254: self.R = 254
         elif self.R < 0: self.R = 0
-        if self.G > 255: self.G = 255
+        if self.G > 254: self.G = 254
         elif self.G < 0: self.G = 0
-        if self.B > 255: self.B = 255
+        if self.B > 254: self.B = 254
         elif self.B < 0: self.B = 0
         self.color = rgbString(self.R, self.G, self.B)
         self.canSlide = False

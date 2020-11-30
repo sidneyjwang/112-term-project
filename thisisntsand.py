@@ -8,6 +8,7 @@
 import random
 from sandbox import *
 from splashscreen import *
+from gradientPicker import *
 
 def rgbString(r, g, b):
     return f'#{r:02x}{g:02x}{b:02x}'
@@ -16,6 +17,7 @@ class thisIsntSand(ModalApp):
     def appStarted(app):
         app.splashscreenMode = splashscreen()
         app.sandboxMode = sandbox()
+        app.gradientMode = gradient()
         app.setActiveMode(app.splashscreenMode)
         app.timerDelay = 5
         app.sandColor = (random.randint(0,255), random.randint(0,255), random.randint(0,255))

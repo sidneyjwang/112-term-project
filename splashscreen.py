@@ -62,6 +62,10 @@ class splashscreen(Mode):
             mode.sandboxColor = rgbString(0,0,0)
             mode.gameColor = rgbString(0,0,0)
 
+    def keyPressed(mode, event):
+        if event.key == 'Space':
+            mode.app.setActiveMode(mode.app.helpMode)
+
     def redrawAll(mode, canvas):
         # insert background image here
         canvas.create_image(mode.width / 2, mode.height, 

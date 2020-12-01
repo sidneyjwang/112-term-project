@@ -29,15 +29,15 @@ def convertHexDigitToBaseTen(digit):
 class sandbox(Mode):
     def appStarted(mode):
         mode.sand = [] # a list to keep track of all particle objects
-        mode.timerDelay = 5 # put this at 5 when not debugging
+        mode.timerDelay = 10 # put this at 10 when not debugging
         mode.currentX = 0 # the x position of the mouse
         mode.currentY = 0 # the y position of the mouse
         mode.mouseIsPressed = False # boolean flag: is the mouse being held?
-        mode.effectiveAppWidth = mode.width # for experimentation purposes: make the window smaller
-        mode.effectiveAppHeight = mode.height # for experimentation purposes: make the window smaller
-        mode.sandGrainSize = 2 # for experimenation purposes: make the sand actually visible
+        mode.effectiveAppWidth = mode.width # for debugging purposes: make the window smaller
+        mode.effectiveAppHeight = mode.height # for debugging purposes: make the window smaller
+        mode.sandGrainSize = 2 # make the sand actually visible
         mode.Sbackground = mode.loadImage('whiteBackground.png')
-        mode.timerIsRunning = True # for debugging
+        mode.timerIsRunning = True # for debugging: run timer/don't by pressing 0
         mode.shouldContinue = True # this is NOT for debugging! DO NOT DELETE
 
     # update the mouse's x and y coordinates, and set the mouseIsPressed boolean to true

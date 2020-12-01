@@ -21,7 +21,7 @@ class thisIsntSand(ModalApp):
         app.gradientMode = gradient()
         app.gameMode = game()
         app.setActiveMode(app.splashscreenMode)
-        app.timerDelay = 5 # change this to 5
+        app.timerDelay = 10 # change this to 10
         app.sandColor = (random.randint(1,254), random.randint(1,254), random.randint(1,254))
 
 thisIsntSand(width=600, height=400)

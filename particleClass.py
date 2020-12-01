@@ -37,8 +37,8 @@ class Particle:
         Particle.PARTICLE_SIZE = particleSize
 
     def getMovePosition(self):
-        x, y = int(self.col + self.xVelocity), int(self.row + self.yVelocity)
-        return (x, y)
+        row, col =  int(self.row + self.yVelocity), int(self.col + self.xVelocity)
+        return (row, col)
     
     # drops the sand particle
     def drop(self):

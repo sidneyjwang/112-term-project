@@ -46,7 +46,7 @@ class game(Mode):
     def appStarted(mode):
         mode.sand = [] # a list to keep track of all particle objects
         mode.timerDelay = 5 # put this at 5 when not debugging
-        mode.mouseMovedDelay = 5 # put this at 1 for line drawing purposes
+        mode.mouseMovedDelay = 10 # put this at 1 for line drawing purposes
         mode.mouseX, mode.mouseY = 0, 0 # keep track of current mouse coordinates
         mode.oldMouseX, mode.oldMouseY = 0, 0 # keep track of old mouse coordinates
         mode.spaceIsPressed = False # boolean flag: is the mouse being held?
@@ -59,19 +59,22 @@ class game(Mode):
         mode.timerIsRunning = True # for debugging: run timer/don't by pressing 0
         mode.shouldContinue = True # this is NOT for debugging! DO NOT DELETE
         mode.canDraw = True
+        mode.totalGoals = []
 
     def mousePressed(mode, event):
         mode.mouseX, mode.mouseY = event.x, event.y
 
     def mouseDragged(mode, event):
+        g = mode.sandGrainSize // 2
         if mode.canDraw:
             mode.oldMouseX, mode.oldMouseY = mode.mouseX, mode.mouseY
             mode.mouseX, mode.mouseY = event.x, event.y
             linePoints = getLinePoints(mode.oldMouseX, mode.oldMouseY, mode.mouseX, mode.mouseY)
             for x, y in linePoints:
-                for horizontal in range(x-1, x+2):
-                    for vertical in range(y-1, y+2):
-                        mode.gameBackground.putpixel((horizontal,vertical),(0,0,0))
+                if mode.gameBackground.getpixel((x+g,y-g)) == (255,255,255):
+                    for horizontal in range(x-1, x+2):
+                        for vertical in range(y-1, y+2):
+                            mode.gameBackground.putpixel((horizontal,vertical),(0,0,0))
 
     def changePixelsGivenCell(mode, row, col, color):
         x0,y0,x1,y1 = mode.getCellBounds(row, col)

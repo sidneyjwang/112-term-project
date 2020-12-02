@@ -116,6 +116,8 @@ class sandbox(Mode):
             mode.timerIsRunning = not mode.timerIsRunning
         elif event.key == 's':
             mode.doStep()
+        elif event.key == 'Enter':
+            mode.app.setActiveMode(mode.app.splashscreenMode)
 
     def slide(mode, particle):
         row, col = particle.row, particle.col

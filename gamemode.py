@@ -126,6 +126,8 @@ class game(Mode):
         if event.key == 'Space':
             mode.spaceIsPressed = not mode.spaceIsPressed
             mode.canDraw = False
+        elif event.key == 'Enter':
+            mode.app.setActiveMode(mode.app.splashscreenMode)
         elif event.key == '0':
             mode.timerIsRunning = not mode.timerIsRunning
         elif event.key == 's':

@@ -36,7 +36,6 @@ Picture mode:
 - Press space to bring up and dismiss gradient picker.
 - Press enter to return to home screen.
 
-
 Citations:
 - cmu-112-graphics from https://www.cs.cmu.edu/~112/
 - Gradient picture from thisissand.com

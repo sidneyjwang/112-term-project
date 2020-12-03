@@ -6,6 +6,7 @@ from cmu_112_graphics import *
 import random
 import string
 from particleClass import *
+from goalClass import *
 
 def getLinePoints(x0,y0,x1,y1):
     didSwitch = False
@@ -59,8 +60,48 @@ class game(Mode):
         mode.timerIsRunning = True # for debugging: run timer/don't by pressing 0
         mode.shouldContinue = True # this is NOT for debugging! DO NOT DELETE
         mode.canDraw = True
-        mode.totalGoals = []
+        mode.goalImages = [mode.loadImage('bluebucket.png'), mode.loadImage('pinkbucket.png'),
+                            mode.loadImage('purplebucket.png')]
+        mode.goalNumber = 1
+        mode.goals = [Goal(200,250)]
 
+    def collidedWithBucket(mode, particle):
+        nextRow, nextCol = particle.getMovePosition()
+        rightMostCol = mode.effectiveAppWidth // mode.sandGrainSize - 1
+        if nextCol > rightMostCol:
+            nextCol = rightMostCol
+        elif nextCol < 0:
+            nextCol = 0
+        x0,y0,x1,y1 = mode.getCellBounds(nextRow, nextCol)
+        pointx, pointy = (x0 + x1) // 2, y1
+        for goal in mode.goals:
+            left = goal.x - 30
+            right = goal.x + 30
+            top = goal.y - 20
+            bottom = goal.y + 25
+            print('left, right, top, bottom', left, right, top, bottom)
+            if left <= pointx <= right and top <= pointy <= bottom:
+                return True
+        return False
+
+    def findGoalIndex(mode, x, y):
+        for goal in range(len(mode.goals)):
+            if (mode.goals[goal].x - 25 < x < mode.goals[goal].x + 25 and
+                mode.goals[goal].y - 25 < y < mode.goals[goal].y + 25):
+                return goal
+
+    def drawGoals(mode, canvas):
+        for goal in range(len(mode.goals)):
+            canvas.create_image(mode.goals[goal].x, mode.goals[goal].y, 
+                                image=ImageTk.PhotoImage(mode.goalImages[goal]))
+            canvas.create_text(mode.goals[goal].x, mode.goals[goal].y, text=mode.goals[goal].counter,
+                                fill='white', font=("Avenir", 18))
+    
+
+    ####################################
+    # sand and mouse stuff
+    ####################################
+    
     def mousePressed(mode, event):
         mode.mouseX, mode.mouseY = event.x, event.y
 
@@ -82,8 +123,6 @@ class game(Mode):
             for y in range(y0, y1):
                 mode.gameBackground.putpixel((x,y), color)
 
-    # when the mouse is pressed, create a shower of sand emerging from the point
-    # modify here for testing purposes if a single grain is needed instead of a shower
     def addParticles(mode, x, y):
         sandGrainNumber = int(random.triangular(5, 10, 5))
         for i in range(sandGrainNumber):
@@ -117,6 +156,7 @@ class game(Mode):
         canvas.create_image(mode.width/2, mode.height/2,  
                             image=ImageTk.PhotoImage(mode.gameBackground))
         mode.drawSand(canvas)
+        mode.drawGoals(canvas)
 
     # create the particles
     def timerFired(mode):
@@ -136,6 +176,10 @@ class game(Mode):
         elif event.key == 's':
             mode.doStep()
 
+    #####################################
+    # sand behavior
+    #####################################    
+    
     def slide(mode, particle):
         row, col = particle.row, particle.col
         lrow, lcol = particle.row+1, particle.col-1
@@ -173,7 +217,6 @@ class game(Mode):
     def cellIsOccupied(mode, row, col):
         g = mode.sandGrainSize // 2
         x0,y0,x1,y1 = mode.getCellBounds(row, col)
-        print(f'x0+g, y1-g: ({x0+g}, {y1-g})')
         return mode.gameBackground.getpixel((x0+g,y1-g)) != (255,255,255)
 
     def sandIsOnOtherSand(mode, particle):
@@ -192,12 +235,10 @@ class game(Mode):
         elif nextCol < 0:
             nextCol = 0
         maxRowValue = mode.getMaxRowValue(particle.row, nextCol)
-        print(f'maxRowValue:{maxRowValue}')
-        return nextRow >= maxRowValue #################### if doesn't work, change >= to >
+        return nextRow >= maxRowValue
 
     def getMaxRowValue(mode, startRowValue, col):
         maxRowValue = startRowValue
-        print(f'maxRowValue: {maxRowValue}')
         while (maxRowValue < mode.effectiveAppHeight // mode.sandGrainSize and
                 not mode.cellIsOccupied(maxRowValue, col)):
             maxRowValue += 1
@@ -220,18 +261,13 @@ class game(Mode):
             particle = mode.sand[i]          
             mode.shouldContinue = True
 
-            print(f"particle's current position (row, col): {particle.row}, {particle.col}")
-            print(f"next position (row, col): {particle.getMovePosition()}")
-
             # check if the sand is sitting on top of something. if it is, call the slide function:
                 # slide: slides the sand if it can slide, if not, colors the background 
             if mode.sandIsOnOtherSand(particle):
-                print('particle is sliding/not sliding')
                 mode.slide(particle)
             
             # did it hit the bottom?
             elif mode.hitBottom(particle):
-                print('the particle hit the bottom')
                 nextRow, nextCol = particle.getMovePosition()
                 rightMostCol = mode.effectiveAppWidth // mode.sandGrainSize - 1
                 if nextCol > rightMostCol:
@@ -244,20 +280,26 @@ class game(Mode):
                 mode.sand.remove(particle)
                 mode.shouldContinue = False
 
+            # if it's going to collide with a bucket, remove the sand and decrease the counter
+            elif mode.collidedWithBucket(particle):
+                print('particle collided wiht bucket')
+                nextRow, nextCol = particle.getMovePosition()
+                x0,y0,x1,y1 = mode.getCellBounds(nextRow, nextCol)
+                goalNumber = mode.findGoalIndex((x0+x1) // 2, y1)
+                mode.goals[goalNumber].decreaseCounter()
+                mode.sand.remove(particle)
+            
             # if it's going to collide with something or reaches the bottom, sit at a legal spot
             elif mode.collisionDetected(particle):
-                print('collision detected')
                 nextRow, nextCol = particle.getMovePosition()
                 if nextCol >= mode.effectiveAppWidth // mode.sandGrainSize:
                     nextCol = mode.effectiveAppWidth // mode.sandGrainSize - 1
                 maxRow = mode.getMaxRowValue(particle.row, nextCol)
-                print(f'maxRow: {maxRow}')
                 particle.row = maxRow
                 particle.col = nextCol
-
+            
             # otherwise, just keep moving
             else:
-                print('particle dropped')
                 particle.drop()
 
             if mode.shouldContinue:

@@ -2,26 +2,25 @@ from cmu_112_graphics import *
 import random
 
 class Goal:
-    def __init__ (self, x, y, color):
+    def __init__ (self, x, y):
         self.counter = 100
         self.x = x
         self.y = y
-        self.color = color
     def decreaseCounter(self):
         self.counter -= 1
 
 def appStarted(app):
     app.background = app.loadImage('whiteBackground.png')
-    app.goalImages = [app.loadImage('testGoal1.png'), app.loadImage('testGoal2.png')]
-    app.goalNumber = 2
+    app.goalImages = [app.loadImage('pinkbucket.png')]
+    app.goalNumber = 1
     app.goals = []
     addGoals(app)
     
 def addGoals(app):
     for goal in range(app.goalNumber):
-        app.goals.append(Goal(app.width // 3 + goal * app.width // 3, app.height // 2, (100*goal,50*goal,135*goal)))
-        drawRectangle(app, app.goals[goal].x-25, app.goals[goal].y-25, 
-                        app.goals[goal].x+25, app.goals[goal].y+25, app.goals[goal].color)
+        app.goals.append(Goal(150, 150))
+        # drawRectangle(app, app.goals[goal].x-25, app.goals[goal].y-25, 
+        #                 app.goals[goal].x+25, app.goals[goal].y+25, app.goals[goal].color)
 
 def mousePressed(app, event):
     x, y = event.x, event.y
@@ -59,5 +58,6 @@ def redrawAll(app, canvas):
     canvas.create_image(app.width/2, app.height/2,  
                             image=ImageTk.PhotoImage(app.background))
     drawGoals(app, canvas)
+    canvas.create_polygon((125,125), (175,125), (170, 175), (130, 175), fill='', width=2,outline='black')
 
 runApp(width=600, height=400)

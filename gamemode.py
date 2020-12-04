@@ -46,6 +46,9 @@ def getLinePoints(x0,y0,x1,y1):
             error -= 1
     return result
 
+def distance(x0,y0,x1,y1):
+    return ((x0-x1)**2 + (y0-y1)**2) ** 0.5
+
 class game(Mode):
     def appStarted(mode):
         mode.sand = [] # a list to keep track of all particle objects
@@ -63,15 +66,14 @@ class game(Mode):
         mode.gameBackground = mode.loadImage('whiteBackground.png')
         mode.timerIsRunning = True # for debugging: run timer/don't by pressing 0
         mode.shouldContinue = True # this is NOT for debugging! DO NOT DELETE
-        mode.canDraw = True
+        mode.canDraw = True # can the user create lines?
         mode.goalImages = [mode.loadImage('bluebucket.png'), mode.loadImage('pinkbucket.png'),
-                            mode.loadImage('purplebucket.png')]
-        mode.goalNumber = random.randint(1, 3)
-        mode.goals = [Goal(mode.offset + 200, 375)]
-        mode.funnel = mode.loadImage('funnel.png')
-        mode.gameWon = False
-        mode.extraGoals = random.randint(0,2)
-        print(mode.extraGoals)
+                            mode.loadImage('purplebucket.png')] # load bucket pngs
+        mode.goals = [Goal(mode.offset + 200, 375)] # create at least one goal
+        mode.funnel = mode.loadImage('funnel.png') # load funnel image
+        mode.gameWon = False # has the game been won?
+        mode.extraGoals = random.randint(0,2) # how many extra goals should there be?
+        # assign the extra goals positions
         for goal in range(mode.extraGoals):
             xPositions = []
             yPositions = []
@@ -80,12 +82,14 @@ class game(Mode):
                 yPositions.append(currentGoal.y)
             nextX = 0
             nextY = 0
+            # choose an x position for the bucket that's not going to overlap
             while True:
                 nextX = random.randint(25, 575)
                 for xValue in xPositions:
                     if abs(xValue - nextX) < 30:
                         break
                 break
+            # choose a y position for the bucket that's not going to overlap
             while True:
                 nextY = random.randint(275, 375)
                 for yValue in yPositions:
@@ -93,7 +97,29 @@ class game(Mode):
                         break
                 break
             mode.goals.append(Goal(nextX, nextY))
+        mode.obstacles = [(mode.offset + 100, random.randint(100,250), random.randint(20,50))] #x0, y0, length
+        for obstacle in range(random.randint(2, 4)):
+            length = random.randint(50, 100)
+            print(length)
+            x = 0
+            y = 0
+            while True:
+                x = random.randint(0, mode.width - length)
+                y = random.randint(100, 350)
+                for x0,y0,length0 in mode.obstacles:
+                    if distance(x,y,x0,y0) < 25:
+                        break
+                break
+            print(length)
+            mode.obstacles.append((x, y, length))
+        print(mode.obstacles)
 
+    def drawObstacles(mode):
+        for index in range(len(mode.obstacles)):
+            for x in range(mode.obstacles[index][0], mode.obstacles[index][0] + mode.obstacles[index][2]):
+                for y in range(mode.obstacles[index][1], mode.obstacles[index][1] + 10):
+                    mode.gameBackground.putpixel((x,y), (0,0,0))
+    
     def collidedWithBucket(mode, particle):
         nextRow, nextCol = particle.getMovePosition()
         rightMostCol = mode.effectiveAppWidth // mode.sandGrainSize - 1
@@ -209,6 +235,7 @@ class game(Mode):
             mode.addParticles(mode.sandX // mode.sandGrainSize, mode.sandY // mode.sandGrainSize)
         mode.doStep()
         mode.checkForWin()
+        mode.drawObstacles()
 
     def keyPressed(mode, event):
         if event.key == 'Space':

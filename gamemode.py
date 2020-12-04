@@ -86,14 +86,14 @@ class game(Mode):
             while True:
                 nextX = random.randint(25, 575)
                 for xValue in xPositions:
-                    if abs(xValue - nextX) < 30:
+                    if abs(xValue - nextX) < 60:
                         break
                 break
             # choose a y position for the bucket that's not going to overlap
             while True:
                 nextY = random.randint(275, 375)
                 for yValue in yPositions:
-                    if abs(yValue - nextY) < 30:
+                    if abs(yValue - nextY) < 60:
                         break
                 break
             mode.goals.append(Goal(nextX, nextY))
@@ -107,7 +107,7 @@ class game(Mode):
                 x = random.randint(0, mode.width - length)
                 y = random.randint(100, 350)
                 for x0,y0,length0 in mode.obstacles:
-                    if distance(x,y,x0,y0) < 25:
+                    if distance(x,y,x0,y0) < 60:
                         break
                 break
             print(length)

@@ -43,6 +43,5 @@ class gradient(Mode):
         print(x,y)
         print(mode.app.sandColor)
 
-    def keyPressed(mode, event):
-        if event.key == 'Space':
-            mode.app.setActiveMode(mode.app.sandboxMode)
+    def mouseReleased(mode, event):
+        mode.app.setActiveMode(mode.app.sandboxMode)

@@ -119,67 +119,106 @@ class sandbox(Mode):
             mode.timerIsRunning = not mode.timerIsRunning
         elif event.key == 's':
             mode.doStep()
+        elif event.key == 'Enter':
+            mode.app.setActiveMode(mode.app.splashscreenMode)
 
+    def particleHitBottom(mode, particle):
+        nextY, nextX = particle.getMovePosition()
+        if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
+            nextX = mode.effectiveAppWidth // mode.sandGrainSize - 1
+        elif nextX < 0:
+            nextX = 0
+        if nextY > mode.maxValuesPerCol[nextX]: 
+            nextY = mode.maxValuesPerCol[nextX]
+        x0,y0,x1,y1 = mode.getCellBounds(nextY, nextX)
+        if nextY >= mode.effectiveAppHeight // mode.sandGrainSize - 1:
+            return True
+        return False
+
+    def leaveParticleOnBottom(mode, particle):
+        nextY, nextX = particle.getMovePosition()
+        if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
+            nextX = mode.effectiveAppWidth // mode.sandGrainSize - 1
+        elif nextX < 0:
+            nextX = 0
+        if nextY > mode.maxValuesPerCol[nextX]: 
+            nextY = mode.maxValuesPerCol[nextX]
+        x0,y0,x1,y1 = mode.getCellBounds(nextY, nextX)
+        mode.sand.remove(particle)
+        mode.changePixelsGivenCell(mode.effectiveAppHeight // mode.sandGrainSize - 1, 
+                nextX, (particle.R, particle.G, particle.B))
+        mode.maxValuesPerCol[nextX] -= 1
+    
+    def collisionDetected(mode, particle):
+        nextY, nextX = particle.getMovePosition()
+        if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
+            nextX = mode.effectiveAppWidth // mode.sandGrainSize - 1
+        elif nextX < 0:
+            nextX = 0
+        if nextY > mode.maxValuesPerCol[nextX]: 
+            nextY = mode.maxValuesPerCol[nextX]
+        x0,y0,x1,y1 = mode.getCellBounds(nextY, nextX)
+        return mode.Sbackground.getpixel((x0,y1)) != (255,255,255) and not particle.canSlide
+    
+    def slide(mode, particle):
+        nextY, nextX = particle.getMovePosition()
+        if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
+            nextX = mode.effectiveAppWidth // mode.sandGrainSize - 1
+        elif nextX < 0:
+            nextX = 0
+        if nextY > mode.maxValuesPerCol[nextX]: 
+            nextY = mode.maxValuesPerCol[nextX]
+        x0,y0,x1,y1 = mode.getCellBounds(nextY, nextX)
+        
+        nextLX = nextX - 1
+        nextRX = nextX + 1
+        nextSY = nextY + 1
+        if nextRX >= mode.effectiveAppWidth // mode.sandGrainSize - 1:
+            nextRX = mode.effectiveAppWidth // mode.sandGrainSize - 1
+        if nextLX <= 0:
+            nextLX = 0
+        lx0,ly0,lx1,ly1 = mode.getCellBounds(nextSY, nextLX)
+        rx0,ry0,rx1,ry1 = mode.getCellBounds(nextSY, nextRX)
+        directions = []
+        g = mode.sandGrainSize // 2
+        # slide left
+        if (nextLX >= 0 and mode.Sbackground.getpixel((lx0+g,ly1-g)) == (255,255,255) and 
+            nextSY <= mode.maxValuesPerCol[nextLX]):
+            directions.append((nextSY, nextLX))
+        # slide right
+        if (nextRX < mode.effectiveAppWidth // mode.sandGrainSize and 
+            mode.Sbackground.getpixel((rx0+g,ry1-g)) == (255,255,255) and
+            nextSY <= mode.maxValuesPerCol[nextRX]):
+            directions.append((nextSY, nextRX))
+        # if it can't do either, stay in place
+        if len(directions) == 0:
+            mode.changePixelsGivenCell(nextY, nextX, (particle.R, particle.G, particle.B))
+            mode.maxValuesPerCol[nextX] -= 1
+            mode.sand.remove(particle)
+            shouldContinue = False
+        # pick a random direction to slide:
+        else:
+            randomIndex = random.choice(directions)
+            particle.row, particle.col = nextSY, randomIndex[1]
+            particle.yVelocity = 1
+            particle.xVelocity = 0
+    
     def doStep(mode):
         i = 0
         while i < len(mode.sand):
             particle = mode.sand[i]
             shouldContinue = True
-            nextY, nextX = particle.getMovePosition()
-            print(f'nextY, nextX: {nextX}, {nextY}')
-            if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
-                nextX = mode.effectiveAppWidth // mode.sandGrainSize - 1
-            elif nextX < 0:
-                nextX = 0
-            if nextY > mode.maxValuesPerCol[nextX]: 
-                nextY = mode.maxValuesPerCol[nextX]
-            x0,y0,x1,y1 = mode.getCellBounds(nextY, nextX)
             # the sand hit the bottom! remove the particle and color the background
-            if nextY >= mode.effectiveAppHeight // mode.sandGrainSize - 1:
-                print('hit bottom')
-                mode.sand.remove(particle)
+            if mode.particleHitBottom(particle):
                 shouldContinue = False
-                mode.changePixelsGivenCell(mode.effectiveAppHeight // mode.sandGrainSize - 1, 
-                        nextX, (particle.R, particle.G, particle.B))
-                mode.maxValuesPerCol[nextX] -= 1
+                mode.leaveParticleOnBottom(particle)
                 continue
             # the sand hit other sand! it's okay to slide now
-            elif mode.Sbackground.getpixel((x0,y1)) != (255,255,255) and particle.canSlide == False: 
+            elif mode.collisionDetected(particle): 
                 particle.canSlide = True
-            # the particle is able to slide
+            # the particle is able to slide, so do it
             if particle.canSlide:
-                nextLX = nextX - 1
-                nextRX = nextX + 1
-                nextSY = nextY + 1
-                if nextRX >= mode.effectiveAppWidth // mode.sandGrainSize - 1:
-                    nextRX = mode.effectiveAppWidth // mode.sandGrainSize - 1
-                if nextLX <= 0:
-                    nextLX = 0
-                lx0,ly0,lx1,ly1 = mode.getCellBounds(nextSY, nextLX)
-                rx0,ry0,rx1,ry1 = mode.getCellBounds(nextSY, nextRX)
-                directions = []
-                g = mode.sandGrainSize // 2
-                # slide left
-                if (nextLX >= 0 and mode.Sbackground.getpixel((lx0+g,ly1-g)) == (255,255,255) and 
-                    nextSY <= mode.maxValuesPerCol[nextLX]):
-                    directions.append((nextSY, nextLX))
-                # slide right
-                if (nextRX < mode.effectiveAppWidth // mode.sandGrainSize and 
-                    mode.Sbackground.getpixel((rx0+g,ry1-g)) == (255,255,255) and
-                    nextSY <= mode.maxValuesPerCol[nextRX]):
-                    directions.append((nextSY, nextRX))
-                # if it can't do either, stay in place
-                if len(directions) == 0:
-                    mode.changePixelsGivenCell(nextY, nextX, (particle.R, particle.G, particle.B))
-                    mode.maxValuesPerCol[nextX] -= 1
-                    mode.sand.remove(particle)
-                    shouldContinue = False
-                # pick a random direction to slide:
-                else:
-                    randomIndex = random.choice(directions)
-                    particle.row, particle.col = nextSY, randomIndex[1]
-                    particle.yVelocity = 1
-                    particle.xVelocity = 0
+                mode.slide(particle)
             # didn't hit anything; just go ahead and keep moving
             if not particle.canSlide:
                 particle.drop()

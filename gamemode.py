@@ -8,6 +8,9 @@ import string
 from particleClass import *
 from goalClass import *
 
+def rgbString(r, g, b):
+    return f'#{r:02x}{g:02x}{b:02x}'
+
 def getLinePoints(x0,y0,x1,y1):
     didSwitch = False
     # if the line is vertical:
@@ -54,16 +57,42 @@ class game(Mode):
         mode.effectiveAppWidth = mode.width # for experimentation purposes: make the window smaller
         mode.effectiveAppHeight = mode.height # for experimentation purposes: make the window smaller
         mode.sandGrainSize = 2 # for experimenation purposes: make the sand actually visible
-        mode.sandX = 25 # where is the sand being dispensed from?
-        mode.sandY = 25 # see above
+        mode.offset = random.randint(25, 300)
+        mode.sandX = mode.offset # where is the sand being dispensed from?
+        mode.sandY = 60 # see above
         mode.gameBackground = mode.loadImage('whiteBackground.png')
         mode.timerIsRunning = True # for debugging: run timer/don't by pressing 0
         mode.shouldContinue = True # this is NOT for debugging! DO NOT DELETE
         mode.canDraw = True
         mode.goalImages = [mode.loadImage('bluebucket.png'), mode.loadImage('pinkbucket.png'),
                             mode.loadImage('purplebucket.png')]
-        mode.goalNumber = 1
-        mode.goals = [Goal(200,250)]
+        mode.goalNumber = random.randint(1, 3)
+        mode.goals = [Goal(mode.offset + 200, 375)]
+        mode.funnel = mode.loadImage('funnel.png')
+        mode.gameWon = False
+        mode.extraGoals = random.randint(0,2)
+        print(mode.extraGoals)
+        for goal in range(mode.extraGoals):
+            xPositions = []
+            yPositions = []
+            for currentGoal in mode.goals:
+                xPositions.append(currentGoal.x)
+                yPositions.append(currentGoal.y)
+            nextX = 0
+            nextY = 0
+            while True:
+                nextX = random.randint(25, 575)
+                for xValue in xPositions:
+                    if abs(xValue - nextX) < 30:
+                        break
+                break
+            while True:
+                nextY = random.randint(275, 375)
+                for yValue in yPositions:
+                    if abs(yValue - nextY) < 30:
+                        break
+                break
+            mode.goals.append(Goal(nextX, nextY))
 
     def collidedWithBucket(mode, particle):
         nextRow, nextCol = particle.getMovePosition()
@@ -86,8 +115,8 @@ class game(Mode):
 
     def findGoalIndex(mode, x, y):
         for goal in range(len(mode.goals)):
-            if (mode.goals[goal].x - 25 < x < mode.goals[goal].x + 25 and
-                mode.goals[goal].y - 25 < y < mode.goals[goal].y + 25):
+            if (mode.goals[goal].x - 30 <= x <= mode.goals[goal].x + 30 and
+                mode.goals[goal].y - 20 <= y <= mode.goals[goal].y + 25):
                 return goal
 
     def drawGoals(mode, canvas):
@@ -96,7 +125,18 @@ class game(Mode):
                                 image=ImageTk.PhotoImage(mode.goalImages[goal]))
             canvas.create_text(mode.goals[goal].x, mode.goals[goal].y, text=mode.goals[goal].counter,
                                 fill='white', font=("Avenir", 18))
+
+    def checkForWin(mode):
+        for goal in mode.goals:
+            if goal.counter != 0:
+                return
+        mode.gameWon = True
+        mode.spaceIsPressed = False
     
+    def drawGameWon(mode, canvas):
+        canvas.create_text(mode.width // 2, mode.height // 2, text='You won! :)',
+                            font=("Avenir", 24), 
+                            fill=rgbString(random.randint(1,254),random.randint(1,254),random.randint(1,254)))
 
     ####################################
     # sand and mouse stuff
@@ -113,8 +153,8 @@ class game(Mode):
             linePoints = getLinePoints(mode.oldMouseX, mode.oldMouseY, mode.mouseX, mode.mouseY)
             for x, y in linePoints:
                 if mode.gameBackground.getpixel((x+g,y-g)) == (255,255,255):
-                    for horizontal in range(x-1, x+2):
-                        for vertical in range(y-1, y+2):
+                    for horizontal in range(x-2, x+3):
+                        for vertical in range(y-2, y+3):
                             mode.gameBackground.putpixel((horizontal,vertical),(0,0,0))
 
     def changePixelsGivenCell(mode, row, col, color):
@@ -124,7 +164,7 @@ class game(Mode):
                 mode.gameBackground.putpixel((x,y), color)
 
     def addParticles(mode, x, y):
-        sandGrainNumber = int(random.triangular(5, 10, 5))
+        sandGrainNumber = int(random.triangular(7, 15, 10))
         for i in range(sandGrainNumber):
             colorVar = int(random.triangular(0, 15, 1)) * random.choice([-1, 1])
             signFlip = random.choice([-1, 1])
@@ -157,18 +197,23 @@ class game(Mode):
                             image=ImageTk.PhotoImage(mode.gameBackground))
         mode.drawSand(canvas)
         mode.drawGoals(canvas)
+        canvas.create_image(mode.sandX, mode.sandY, image=ImageTk.PhotoImage(mode.funnel),
+                            anchor='s')
+        if mode.gameWon:
+            mode.drawGameWon(canvas)
 
     # create the particles
     def timerFired(mode):
         # when space is pressed, dispense the particles
         if mode.spaceIsPressed:
-            mode.addParticles(mode.sandX, mode.sandY)
+            mode.addParticles(mode.sandX // mode.sandGrainSize, mode.sandY // mode.sandGrainSize)
         mode.doStep()
+        mode.checkForWin()
 
     def keyPressed(mode, event):
         if event.key == 'Space':
             mode.spaceIsPressed = not mode.spaceIsPressed
-            mode.canDraw = False
+            mode.canDraw = not mode.canDraw
         elif event.key == 'Enter':
             mode.app.setActiveMode(mode.app.splashscreenMode)
         elif event.key == '0':
@@ -282,7 +327,7 @@ class game(Mode):
 
             # if it's going to collide with a bucket, remove the sand and decrease the counter
             elif mode.collidedWithBucket(particle):
-                print('particle collided wiht bucket')
+                print('particle collided with bucket')
                 nextRow, nextCol = particle.getMovePosition()
                 x0,y0,x1,y1 = mode.getCellBounds(nextRow, nextCol)
                 goalNumber = mode.findGoalIndex((x0+x1) // 2, y1)

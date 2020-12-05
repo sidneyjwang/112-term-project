@@ -30,7 +30,7 @@ class animationMode(Mode):
     # create a shower of sand emerging from the point
     # modify here for testing purposes if a single grain is needed instead of a shower
     def addParticles(mode, x, y):
-        sandGrainNumber = int(random.triangular(3, 5, 3))
+        sandGrainNumber = int(random.triangular(5, 7, 5))
         for i in range(sandGrainNumber):
             colorVar = int(random.triangular(0, 10, 1)) * random.choice([-1, 1])
             signFlip = random.choice([-1, 1])
@@ -178,11 +178,11 @@ class animationMode(Mode):
             mode.currentX += 2 * mode.direction
             if mode.currentX >= mode.effectiveAppWidth // mode.sandGrainSize:
                 mode.currentX = mode.effectiveAppWidth // mode.sandGrainSize - 1
-                mode.currentY -= 2
+                mode.currentY -= 3
                 mode.direction = -1 * mode.direction
             elif mode.currentX < 0:
                 mode.currentX = 0
-                mode.currentY -= 2
+                mode.currentY -= 3
                 mode.direction = -1 * mode.direction
             if mode.currentY < 0:
                 mode.currentY = 0

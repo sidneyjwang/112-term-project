@@ -12,6 +12,7 @@ from gradientPicker import *
 from gamemode import *
 from helpscreen import *
 from picture import *
+from pictureAnimation import *
 
 class thisIsntSand(ModalApp):
     def appStarted(app):
@@ -21,8 +22,10 @@ class thisIsntSand(ModalApp):
         app.gameMode = game()
         app.helpMode = helpScreen()
         app.pictureMode = picture()
+        app.animationMode = animationMode()
         app.setActiveMode(app.splashscreenMode)
         app.timerDelay = 10 # change this to 10
         app.sandColor = (random.randint(1,254), random.randint(1,254), random.randint(1,254))
+        app.imageName = ''
 
 thisIsntSand(width=600, height=400)

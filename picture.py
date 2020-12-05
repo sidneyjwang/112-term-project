@@ -19,6 +19,8 @@ class picture(Mode):
         mode.animatePos = (mode.width / 4 * 3, mode.height / 16 * 8)
         mode.recreateColor = rgbString(0,0,0)
         mode.animateColor = rgbString(0,0,0)
+        mode.app.imageName = mode.getUserInput('Please input name of file:')
+        print(mode.app.imageName)
 
     def mouseMoved(mode, event):
         mode.mouseX, mode.mouseY = event.x, event.y
@@ -30,6 +32,7 @@ class picture(Mode):
         elif (mode.animatePos[0]-mode.animateWidth <= mode.mouseX <= mode.animatePos[0]+mode.animateWidth and
         mode.animatePos[1]-mode.textHeight <= mode.mouseY <= mode.animatePos[1]+mode.textHeight):
             print('animate!')
+            mode.app.setActiveMode(mode.app.animationMode)
 
     def timerFired(mode):
         if (mode.recreatePos[0]-mode.recreateWidth <= mode.mouseX <= mode.recreatePos[0]+mode.recreateWidth and

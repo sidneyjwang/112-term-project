@@ -60,17 +60,26 @@ class game(Mode):
         mode.effectiveAppWidth = mode.width # for experimentation purposes: make the window smaller
         mode.effectiveAppHeight = mode.height # for experimentation purposes: make the window smaller
         mode.sandGrainSize = 2 # for experimenation purposes: make the sand actually visible
-        mode.offset = random.randint(25, 300)
-        mode.sandX = mode.offset # where is the sand being dispensed from?
-        mode.sandY = 60 # see above
         mode.gameBackground = mode.loadImage('whiteBackground.png')
         mode.timerIsRunning = True # for debugging: run timer/don't by pressing 0
         mode.shouldContinue = True # this is NOT for debugging! DO NOT DELETE
         mode.canDraw = True # can the user create lines?
         mode.goalImages = [mode.loadImage('bluebucket.png'), mode.loadImage('pinkbucket.png'),
                             mode.loadImage('purplebucket.png')] # load bucket pngs
-        mode.goals = [Goal(mode.offset + 200, 375)] # create at least one goal
         mode.funnel = mode.loadImage('funnel.png') # load funnel image
+        mode.resetAll()
+
+    def resetAll(mode):
+        mode.sand = [] # reset the sand
+        # reset the background
+        for x in range(mode.width):
+            for y in range(mode.height):
+                if mode.gameBackground.getpixel((x,y)) != (255,255,255):
+                    mode.gameBackground.putpixel((x,y), (255,255,255))
+        mode.offset = random.randint(25, 300)
+        mode.sandX = mode.offset # where is the sand being dispensed from?
+        mode.sandY = 60 # see above
+        mode.goals = [Goal(mode.offset + 200, 375)] # create at least one goal
         mode.gameWon = False # has the game been won?
         mode.extraGoals = random.randint(0,2) # how many extra goals should there be?
         # assign the extra goals positions
@@ -86,7 +95,7 @@ class game(Mode):
             while True:
                 nextX = random.randint(25, 575)
                 for xValue in xPositions:
-                    if abs(xValue - nextX) < 60:
+                    if abs(xValue - nextX) > 60:
                         break
                 break
             # choose a y position for the bucket that's not going to overlap
@@ -100,19 +109,20 @@ class game(Mode):
         mode.obstacles = [(mode.offset + 100, random.randint(100,250), random.randint(20,50))] #x0, y0, length
         for obstacle in range(random.randint(2, 4)):
             length = random.randint(50, 100)
-            print(length)
             x = 0
             y = 0
+            goalYPos = []
+            for goal in mode.goals:
+                goalYPos.append(goal.y)
+            print(goalYPos)
             while True:
                 x = random.randint(0, mode.width - length)
-                y = random.randint(100, 350)
+                y = random.randint(100, min(goalYPos) - 50)
                 for x0,y0,length0 in mode.obstacles:
                     if distance(x,y,x0,y0) < 60:
                         break
                 break
-            print(length)
             mode.obstacles.append((x, y, length))
-        print(mode.obstacles)
 
     def drawObstacles(mode):
         for index in range(len(mode.obstacles)):
@@ -134,7 +144,6 @@ class game(Mode):
             right = goal.x + 30
             top = goal.y - 20
             bottom = goal.y + 25
-            print('left, right, top, bottom', left, right, top, bottom)
             if left <= pointx <= right and top <= pointy <= bottom:
                 return True
         return False
@@ -247,6 +256,8 @@ class game(Mode):
             mode.timerIsRunning = not mode.timerIsRunning
         elif event.key == 's':
             mode.doStep()
+        elif event.key == 'r':
+            mode.resetAll()
 
     #####################################
     # sand behavior
@@ -354,7 +365,6 @@ class game(Mode):
 
             # if it's going to collide with a bucket, remove the sand and decrease the counter
             elif mode.collidedWithBucket(particle):
-                print('particle collided with bucket')
                 nextRow, nextCol = particle.getMovePosition()
                 x0,y0,x1,y1 = mode.getCellBounds(nextRow, nextCol)
                 goalNumber = mode.findGoalIndex((x0+x1) // 2, y1)

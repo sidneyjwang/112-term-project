@@ -20,7 +20,7 @@ class helpScreen(Mode):
         canvas.create_text(mode.width/14, mode.height/32 * 17, text='game mode', 
                             font=("Avenir", 20, 'bold'), anchor = 'w')
         canvas.create_text(mode.width/14, mode.height/32 * 19, 
-                            text='direct sand to its destination, toggle flow with space', 
+                            text='direct sand to its destination, toggle flow with space, regenerate with r', 
                             font=("Avenir", 16), anchor = 'w')
         canvas.create_text(mode.width/2, mode.height/32 * 23, 
                             text='press space to return home', 

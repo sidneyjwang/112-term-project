@@ -38,6 +38,7 @@ class splashscreen(Mode):
         mode.pictureTextY-mode.textHeight < mode.mouseY < mode.pictureTextY+mode.textHeight):
             # replace with picture mode
             print('picture!')
+            mode.app.setActiveMode(mode.app.pictureMode)
         elif (mode.center-mode.gameWidth < mode.mouseX < mode.center+mode.gameWidth and
         mode.gameTextY-mode.textHeight < mode.mouseY < mode.gameTextY+mode.textHeight):
             # replace with game mode
@@ -71,10 +72,10 @@ class splashscreen(Mode):
         canvas.create_image(mode.width / 2, mode.height, 
                             image=ImageTk.PhotoImage(mode.SSbackground), anchor='s')
         canvas.create_text(mode.center, mode.titlePositionY, 
-                            text='THISISNTSAND', font=("Avenir", 32))
-        canvas.create_text(mode.center, mode.sandboxTextY, text='SANDBOX  >',
+                            text='thisisntsand', font=("Avenir", 32, "bold"))
+        canvas.create_text(mode.center, mode.sandboxTextY, text='sandbox  >',
                             font=("Avenir", 24), fill=mode.sandboxColor)
-        canvas.create_text(mode.center, mode.pictureTextY, text='PICTURE  >',
+        canvas.create_text(mode.center, mode.pictureTextY, text='picture  >',
                             font=("Avenir", 24), fill=mode.pictureColor)
-        canvas.create_text(mode.center, mode.gameTextY, text='GAME  >',
+        canvas.create_text(mode.center, mode.gameTextY, text='game  >',
                             font=("Avenir", 24), fill=mode.gameColor)

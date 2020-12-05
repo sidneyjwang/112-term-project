@@ -11,9 +11,7 @@ from splashscreen import *
 from gradientPicker import *
 from gamemode import *
 from helpscreen import *
-
-def rgbString(r, g, b):
-    return f'#{r:02x}{g:02x}{b:02x}'
+from picture import *
 
 class thisIsntSand(ModalApp):
     def appStarted(app):
@@ -22,6 +20,7 @@ class thisIsntSand(ModalApp):
         app.gradientMode = gradient()
         app.gameMode = game()
         app.helpMode = helpScreen()
+        app.pictureMode = picture()
         app.setActiveMode(app.splashscreenMode)
         app.timerDelay = 10 # change this to 10
         app.sandColor = (random.randint(1,254), random.randint(1,254), random.randint(1,254))

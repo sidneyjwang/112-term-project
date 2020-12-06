@@ -16,6 +16,9 @@
 - Open the file named thisisntsand.py to run the program
 - When running sandbox mode, press space to bring up the gradient selection screen! Press with mouse which color you'd like to select; then press space again to go back to drawing sand.
 
+12/5 tp2 update:
+- All 3 modes work!
+
 # Controls
 Home screen:
 - Press space to bring up help menu.
@@ -25,17 +28,19 @@ Help screen:
 
 Sandbox mode:
 - Press space to bring up gradient picker.
-- After picking desired color, press space to return to sandbox.
 - Press Enter to return to home screen.
 
 Game mode:
-- Press space to begin letting sand fall. Note that drawing is disabled after pressing space.
+- Press space to begin letting sand fall. Note that drawing is disabled when new sand is being added.
 - Press enter to return to home screen.
+- Press R to regenerate a level.
 
 Picture mode:
 - Press space to bring up and dismiss gradient picker.
 - Press enter to return to home screen.
+- Press S to score the level.
 
 Citations:
 - cmu-112-graphics from https://www.cs.cmu.edu/~112/
 - Gradient picture from thisissand.com
+- Bob Ross winter painting demo by Bob Ross

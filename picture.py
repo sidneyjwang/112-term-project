@@ -1,5 +1,5 @@
 ##################################
-# picture mode page
+# picture mode landing page
 ##################################
 
 from cmu_112_graphics import *
@@ -12,19 +12,20 @@ class picture(Mode):
     def appStarted(mode):
         mode.mouseX, mode.mouseY = 0, 0
         mode.pictureBackground = mode.loadImage('samplesandbackground.png')
-        mode.textHeight = 15
-        mode.recreateWidth = 50
-        mode.animateWidth = 50
-        mode.recreatePos = (mode.width / 4, mode.height / 16 * 8)
-        mode.animatePos = (mode.width / 4 * 3, mode.height / 16 * 8)
-        mode.recreateColor = rgbString(0,0,0)
-        mode.animateColor = rgbString(0,0,0)
-        mode.app.imageName = mode.getUserInput('Please input name of file:')
+        mode.textHeight = 15 # half the text height
+        mode.recreateWidth = 50 # half the text width
+        mode.animateWidth = 50 # half the text width
+        mode.recreatePos = (mode.width / 4, mode.height / 16 * 8) # position of text
+        mode.animatePos = (mode.width / 4 * 3, mode.height / 16 * 8) # see above
+        mode.recreateColor = rgbString(0,0,0) # color for recreate
+        mode.animateColor = rgbString(0,0,0) # color for animate
+        mode.app.imageName = mode.getUserInput('Please input name of file:') # what file?
         print(mode.app.imageName)
 
     def mouseMoved(mode, event):
         mode.mouseX, mode.mouseY = event.x, event.y
 
+    # detect buttons being pressed
     def mousePressed(mode, event):
         if (mode.recreatePos[0]-mode.recreateWidth <= mode.mouseX <= mode.recreatePos[0]+mode.recreateWidth and
         mode.recreatePos[1]-mode.textHeight <= mode.mouseY <= mode.recreatePos[1]+mode.textHeight):
@@ -35,6 +36,7 @@ class picture(Mode):
             print('animate!')
             mode.app.setActiveMode(mode.app.animationMode)
 
+    # detect mouse hovering over text and turn it gray
     def timerFired(mode):
         if (mode.recreatePos[0]-mode.recreateWidth <= mode.mouseX <= mode.recreatePos[0]+mode.recreateWidth and
         mode.recreatePos[1]-mode.textHeight <= mode.mouseY <= mode.recreatePos[1]+mode.textHeight):
@@ -48,6 +50,7 @@ class picture(Mode):
             mode.animateColor = rgbString(0,0,0)
             mode.recreateColor = rgbString(0,0,0)
 
+    # return to homepage by pressing enter
     def keyPressed(mode, event):
         if event.key == 'Enter':
             mode.app.setActiveMode(mode.app.splashscreenMode)

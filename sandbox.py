@@ -79,11 +79,13 @@ class sandbox(Mode):
             canvas.create_rectangle(x0,y0,x1,y1, 
                                     fill=particle.color, width=0)
 
+    # get the coordinates for a specific cell
     def getCellBounds(mode, row, col):
         x0, y0 = col * mode.sandGrainSize, row * mode.sandGrainSize
         x1, y1 = x0 + mode.sandGrainSize, y0 + mode.sandGrainSize
         return x0,y0,x1,y1
 
+    # given an x, y pixel pair, find which cell it belongs to
     def getCell(mode, x, y):
         row = y // mode.sandGrainSize
         col = x // mode.sandGrainSize
@@ -121,6 +123,7 @@ class sandbox(Mode):
         elif event.key == 'Enter':
             mode.app.setActiveMode(mode.app.splashscreenMode)
 
+    # detects if a particle hit the bottom of the screen
     def particleHitBottom(mode, particle):
         nextY, nextX = particle.getMovePosition()
         if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
@@ -134,6 +137,8 @@ class sandbox(Mode):
             return True
         return False
 
+    # if a particle hit the bottom, call this function to leave it on the bottom
+    # and stop moving
     def leaveParticleOnBottom(mode, particle):
         nextY, nextX = particle.getMovePosition()
         if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
@@ -148,6 +153,7 @@ class sandbox(Mode):
                 nextX, (particle.R, particle.G, particle.B))
         mode.maxValuesPerCol[nextX] -= 1
     
+    # detects collisions with existing sand
     def collisionDetected(mode, particle):
         nextY, nextX = particle.getMovePosition()
         if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
@@ -159,6 +165,7 @@ class sandbox(Mode):
         x0,y0,x1,y1 = mode.getCellBounds(nextY, nextX)
         return mode.Sbackground.getpixel((x0,y1)) != (255,255,255) and not particle.canSlide
     
+    # slide!!
     def slide(mode, particle):
         nextY, nextX = particle.getMovePosition()
         if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:

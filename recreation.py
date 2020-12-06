@@ -26,7 +26,7 @@ class recreationMode(Mode):
         mode.shouldScore = False # display the score?
         mode.scoreNumber = 0 # keep track of the score
 
-    # calculate the score
+    # calculate the score by scoring each cell if not blank and then averaging
     def score(mode):
         result = []
         for row in range(mode.effectiveAppHeight // 20):
@@ -43,21 +43,25 @@ class recreationMode(Mode):
         userTotalR, userTotalG, userTotalB = 0,0,0
         startXPixel = col * 20
         startYPixel = row * 20
+        # get the expected rgb values
         for x in range(startXPixel, startXPixel + 20):
             for y in range(startYPixel, startYPixel + 20):
                 color = mode.targetImage.getpixel((x,y))
                 expectedTotalR += color[0]
                 expectedTotalG += color[1]
                 expectedTotalB += color[2]
+        # get the actual rgb values that the user made
         for x in range(startXPixel, startXPixel + 20):
             for y in range(startYPixel, startYPixel + 20):
                 color = mode.Rbackground.getpixel((x,y))
                 userTotalR += color[0]
                 userTotalG += color[1]
                 userTotalB += color[2]
+        # calculate the difference between expected and actual
         rDiff = abs(userTotalR - expectedTotalR) // (400)
         gDiff = abs(userTotalG - expectedTotalG) // (400)
         bDiff = abs(userTotalB - expectedTotalB) // (400)
+        # any blank cells don't count towards the score
         if (expectedTotalR == 0 and expectedTotalG == 0 and expectedTotalB == 0
             and userTotalR == 0 and userTotalG == 0 and userTotalB == 0):
             return None

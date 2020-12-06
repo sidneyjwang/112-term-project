@@ -173,24 +173,31 @@ class animationMode(Mode):
             print(f'currentX: {mode.currentX}')
             x0,y0,x1,y1 = mode.getCellBounds(mode.maxValuesPerCol[mode.currentX-1], mode.currentX)
             print(f'x0,y0,x1,y1: {x0}, {y0}, {x1}, {y1}')
+            # what color do we want?
             mode.sandColor = mode.targetImage.getpixel((x0+g, y1-g))    
-            mode.addParticles(mode.currentX, mode.currentY) #######################################
+            mode.addParticles(mode.currentX, mode.currentY)
+            # move at a speed
             mode.currentX += 2 * mode.direction
+            # if the right side of the screen reached, start going left instead
             if mode.currentX >= mode.effectiveAppWidth // mode.sandGrainSize:
                 mode.currentX = mode.effectiveAppWidth // mode.sandGrainSize - 1
                 mode.currentY -= 3
                 mode.direction = -1 * mode.direction
+            # hit the left side: start moving right instead
             elif mode.currentX < 0:
                 mode.currentX = 0
                 mode.currentY -= 3
                 mode.direction = -1 * mode.direction
+            # once reached the top of the screen, dispense from the topmost position
             if mode.currentY < 0:
                 mode.currentY = 0
-
+        # stop when reached the top
         if min(mode.maxValuesPerCol) < 2:
             mode.dispenseSand = False
         
-        # sand related things:
+        ######################################
+        # and now, for sand
+        ######################################
         i = 0
         while i < len(mode.sand):
             particle = mode.sand[i]

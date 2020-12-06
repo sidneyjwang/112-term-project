@@ -27,9 +27,9 @@ class thisIsntSand(ModalApp):
         app.animationMode = animationMode()
         app.recreationMode = recreationMode()
         app.recreationGradientMode = gradientRecreation()
-        app.setActiveMode(app.splashscreenMode)
+        app.setActiveMode(app.splashscreenMode) # begin on the splash screen
         app.timerDelay = 10 # change this to 10
         app.sandColor = (random.randint(1,254), random.randint(1,254), random.randint(1,254))
-        app.imageName = ''
+        app.imageName = '' # this will be changed later if the user opens picture mode
 
 thisIsntSand(width=600, height=400)

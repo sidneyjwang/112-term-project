@@ -1,3 +1,7 @@
+#####################################
+# help screen
+#####################################
+
 from cmu_112_graphics import *
 
 class helpScreen(Mode):

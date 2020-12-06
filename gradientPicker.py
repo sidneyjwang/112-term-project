@@ -37,11 +37,13 @@ class gradient(Mode):
     def mousePressed(mode, event):
         x, y = event.x, event.y
         color = mode.Gbackground.getpixel((x,y))
+        # white is not allowed
         if color == (255,255,255):
             color = (254,254,254)
         mode.app.sandColor = color
         print(x,y)
         print(mode.app.sandColor)
 
+    # return back to old screen once done picking color
     def mouseReleased(mode, event):
         mode.app.setActiveMode(mode.app.sandboxMode)

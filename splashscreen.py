@@ -28,6 +28,7 @@ class splashscreen(Mode):
     def mouseMoved(mode, event):
         mode.mouseX, mode.mouseY = event.x, event.y
 
+    # check if a button was pressed
     def mousePressed(mode, event):
         if (mode.center-mode.sandboxWidth < mode.mouseX < mode.center+mode.sandboxWidth and
         mode.sandboxTextY-mode.textHeight < mode.mouseY < mode.sandboxTextY+mode.textHeight):
@@ -45,6 +46,7 @@ class splashscreen(Mode):
             print('game!')
             mode.app.setActiveMode(mode.app.gameMode)
 
+    # check if the mouse is hovering over text; if so, make it gray :)
     def timerFired(mode):
         if (mode.center-mode.sandboxWidth < mode.mouseX < mode.center+mode.sandboxWidth and
         mode.sandboxTextY-mode.textHeight < mode.mouseY < mode.sandboxTextY+mode.textHeight):
@@ -63,6 +65,7 @@ class splashscreen(Mode):
             mode.sandboxColor = rgbString(0,0,0)
             mode.gameColor = rgbString(0,0,0)
 
+    # bring up the help page
     def keyPressed(mode, event):
         if event.key == 'Space':
             mode.app.setActiveMode(mode.app.helpMode)

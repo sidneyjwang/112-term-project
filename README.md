@@ -44,3 +44,6 @@ Citations:
 - cmu-112-graphics from https://www.cs.cmu.edu/~112/
 - Gradient picture from thisissand.com
 - Bob Ross winter painting demo by Bob Ross
+- Andrew for bucket art
+
+Inspiration from thisissand.com and sugar, sugar

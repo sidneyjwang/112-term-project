@@ -71,7 +71,7 @@ class game(Mode):
 
     def resetAll(mode):
         mode.sand = [] # reset the sand
-        # reset the background
+        # reset the background to be white
         for x in range(mode.width):
             for y in range(mode.height):
                 if mode.gameBackground.getpixel((x,y)) != (255,255,255):
@@ -84,16 +84,9 @@ class game(Mode):
         mode.extraGoals = random.randint(0,2) # how many extra goals should there be?
         # assign the extra goals positions
         for goal in range(mode.extraGoals):
-            xPositions = []
-            yPositions = []
-            for currentGoal in mode.goals:
-                xPositions.append(currentGoal.x)
-                yPositions.append(currentGoal.y)
             nextX = 0
             nextY = 0
-            print(xPositions)
-            print(yPositions)
-            # choose an x position for the bucket that's not going to overlap
+            # choose a position for the bucket that's not going to overlap
             while True:
                 shouldContinue = False
                 nextX = random.randint(25, 575)
@@ -101,12 +94,14 @@ class game(Mode):
                 for goal in mode.goals:
                     if distance(goal.x, goal.y, nextX, nextY) < 75:
                         print('this happened')
+                        # a position that overlapped was picked; try again
                         shouldContinue = True
                         break
                     else: 
                         shouldContinue = False
                 if shouldContinue:
                     continue
+                # found a good position!
                 break
             mode.goals.append(Goal(nextX, nextY))
         mode.obstacles = [(mode.offset + 100, random.randint(100,250), random.randint(20,50))] #x0, y0, length
@@ -117,6 +112,7 @@ class game(Mode):
             goalYPos = []
             for goal in mode.goals:
                 goalYPos.append(goal.y)
+            # space out the obstacles a bit
             while True:
                 shouldContinue = False
                 x = random.randint(0, mode.width - length)
@@ -132,12 +128,14 @@ class game(Mode):
                 break
             mode.obstacles.append((x, y, length))
 
+    # draw all of the obstacles
     def drawObstacles(mode):
         for index in range(len(mode.obstacles)):
             for x in range(mode.obstacles[index][0], mode.obstacles[index][0] + mode.obstacles[index][2]):
                 for y in range(mode.obstacles[index][1], mode.obstacles[index][1] + 10):
                     mode.gameBackground.putpixel((x,y), (0,0,0))
     
+    # detects if a sand grain hit a bucket
     def collidedWithBucket(mode, particle):
         nextRow, nextCol = particle.getMovePosition()
         rightMostCol = mode.effectiveAppWidth // mode.sandGrainSize - 1
@@ -156,12 +154,14 @@ class game(Mode):
                 return True
         return False
 
+    # given an x,y position known to be part of a goal, find which goal it's part of 
     def findGoalIndex(mode, x, y):
         for goal in range(len(mode.goals)):
             if (mode.goals[goal].x - 30 <= x <= mode.goals[goal].x + 30 and
                 mode.goals[goal].y - 20 <= y <= mode.goals[goal].y + 25):
                 return goal
 
+    # draw the buckets
     def drawGoals(mode, canvas):
         for goal in range(len(mode.goals)):
             canvas.create_image(mode.goals[goal].x, mode.goals[goal].y, 
@@ -169,6 +169,7 @@ class game(Mode):
             canvas.create_text(mode.goals[goal].x, mode.goals[goal].y, text=mode.goals[goal].counter,
                                 fill='white', font=("Avenir", 18))
 
+    # check if all the buckets are 0
     def checkForWin(mode):
         for goal in mode.goals:
             if goal.counter != 0:
@@ -176,6 +177,7 @@ class game(Mode):
         mode.gameWon = True
         mode.spaceIsPressed = False
     
+    # display win message... yay!
     def drawGameWon(mode, canvas):
         canvas.create_text(mode.width // 2, mode.height // 2, text='You won! :)',
                             font=("Avenir", 24), 
@@ -188,6 +190,7 @@ class game(Mode):
     def mousePressed(mode, event):
         mode.mouseX, mode.mouseY = event.x, event.y
 
+    # draw lines
     def mouseDragged(mode, event):
         g = mode.sandGrainSize // 2
         if mode.canDraw:
@@ -196,6 +199,7 @@ class game(Mode):
             linePoints = getLinePoints(mode.oldMouseX, mode.oldMouseY, mode.mouseX, mode.mouseY)
             for x, y in linePoints:
                 if mode.gameBackground.getpixel((x+g,y-g)) == (255,255,255):
+                    # give the lines some thickness
                     for horizontal in range(x-2, x+3):
                         for vertical in range(y-2, y+3):
                             mode.gameBackground.putpixel((horizontal,vertical),(0,0,0))

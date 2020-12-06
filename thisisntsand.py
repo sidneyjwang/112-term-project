@@ -13,6 +13,8 @@ from gamemode import *
 from helpscreen import *
 from picture import *
 from pictureAnimation import *
+from recreation import *
+from gradientRecreation import *
 
 class thisIsntSand(ModalApp):
     def appStarted(app):
@@ -23,6 +25,8 @@ class thisIsntSand(ModalApp):
         app.helpMode = helpScreen()
         app.pictureMode = picture()
         app.animationMode = animationMode()
+        app.recreationMode = recreationMode()
+        app.recreationGradientMode = gradientRecreation()
         app.setActiveMode(app.splashscreenMode)
         app.timerDelay = 10 # change this to 10
         app.sandColor = (random.randint(1,254), random.randint(1,254), random.randint(1,254))

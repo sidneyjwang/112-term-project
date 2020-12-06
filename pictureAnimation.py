@@ -20,11 +20,11 @@ class animationMode(Mode):
         # keep track of the highest sand grain particle per column:
         mode.maxValuesPerCol = [mode.effectiveAppHeight // mode.sandGrainSize-1] * (mode.effectiveAppWidth // mode.sandGrainSize)
         # sand grains that are no longer objects and have become part of the background
-        mode.screenBackground = mode.loadImage('whiteBackground.png')
-        mode.targetImage = mode.loadImage(mode.app.imageName)
-        mode.direction = 1
-        mode.dispenseSand = True
-        mode.sandColor = (0,0,0)
+        mode.screenBackground = mode.loadImage('whiteBackground.png') # start with a blank screen
+        mode.targetImage = mode.loadImage(mode.app.imageName) # the desired image to recreate
+        mode.direction = 1 # is the computer going left --> right, or right --> left?
+        mode.dispenseSand = True # once arrived at the top, don't dispense sand anymore
+        mode.sandColor = (0,0,0) # keep track of sand color
         mode.timerIsRunning = True
 
     # create a shower of sand emerging from the point

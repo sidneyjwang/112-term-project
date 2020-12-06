@@ -1,5 +1,5 @@
 ###############################
-# gradient selection for sandbox mode
+# gradient selection for recreation mode
 ###############################
 
 from cmu_112_graphics import *
@@ -26,7 +26,7 @@ def convertHexDigitToBaseTen(digit):
 def rgbString(r, g, b):
     return f'#{r:02x}{g:02x}{b:02x}'
 
-class gradient(Mode):
+class gradientRecreation(Mode):
     def appStarted(mode):
         mode.Gbackground = mode.loadImage('gradient.png')
 
@@ -44,4 +44,4 @@ class gradient(Mode):
         print(mode.app.sandColor)
 
     def mouseReleased(mode, event):
-        mode.app.setActiveMode(mode.app.sandboxMode)
+        mode.app.setActiveMode(mode.app.recreationMode)

@@ -29,6 +29,7 @@ class picture(Mode):
         if (mode.recreatePos[0]-mode.recreateWidth <= mode.mouseX <= mode.recreatePos[0]+mode.recreateWidth and
         mode.recreatePos[1]-mode.textHeight <= mode.mouseY <= mode.recreatePos[1]+mode.textHeight):
             print('recreate!')
+            mode.app.setActiveMode(mode.app.recreationMode)
         elif (mode.animatePos[0]-mode.animateWidth <= mode.mouseX <= mode.animatePos[0]+mode.animateWidth and
         mode.animatePos[1]-mode.textHeight <= mode.mouseY <= mode.animatePos[1]+mode.textHeight):
             print('animate!')

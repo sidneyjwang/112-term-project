@@ -1,5 +1,5 @@
 ####################################
-# sandbox mode
+# recreation mode
 ####################################
 
 from cmu_112_graphics import *
@@ -7,25 +7,7 @@ import random
 import string
 from particleClass import *
 
-# takes in a rgbString and converts it to RGB
-def rgbStringtoRGB(rgbString):
-    red1 = convertHexDigitToBaseTen(rgbString[1])
-    red2 = convertHexDigitToBaseTen(rgbString[2])
-    green1 = convertHexDigitToBaseTen(rgbString[3])
-    green2 = convertHexDigitToBaseTen(rgbString[4])
-    blue1 = convertHexDigitToBaseTen(rgbString[5])
-    blue2 = convertHexDigitToBaseTen(rgbString[6])
-    print(red1,red2,green1,green2,blue1,blue2)
-    return (red2 + 16*red1, green2 + 16*green1, blue2 + 16*blue1)
-
-# helper function for rgbStringtoRGB    
-def convertHexDigitToBaseTen(digit):
-    if digit in string.digits:
-        return int(digit)
-    else:
-        return string.ascii_lowercase.find(digit) + 10
-
-class sandbox(Mode):
+class recreationMode(Mode):
     def appStarted(mode):
         mode.sand = [] # a list to keep track of all particle objects
         mode.timerDelay = 5 # put this at 5 when not debugging
@@ -38,8 +20,60 @@ class sandbox(Mode):
         # keep track of the highest sand grain particle per column:
         mode.maxValuesPerCol = [mode.effectiveAppHeight // mode.sandGrainSize-1] * (mode.effectiveAppWidth // mode.sandGrainSize)
         # sand grains that are no longer objects and have become part of the background
-        mode.Sbackground = mode.loadImage('whiteBackground.png')
-        mode.timerIsRunning = True
+        mode.Rbackground = mode.loadImage('whiteBackground.png') # for the user
+        mode.targetImage = mode.loadImage(mode.app.imageName) # what the user should recreate
+        mode.timerIsRunning = True 
+        mode.shouldScore = False # display the score?
+        mode.scoreNumber = 0 # keep track of the score
+
+    # calculate the score
+    def score(mode):
+        result = []
+        for row in range(mode.effectiveAppHeight // 20):
+            for col in range(mode.effectiveAppWidth // 20):
+                if mode.scoreCell(row, col) != None and mode.scoreCell(row, col) < .95:
+                    result.append(mode.scoreCell(row, col))
+        print(result)
+        mode.scoreNumber = sum(result) * 100 // len(result)
+        mode.scoreNumber = int(mode.scoreNumber)
+    
+    # calculate the score for one individual "cell"
+    def scoreCell(mode, row, col):
+        expectedTotalR, expectedTotalG, expectedTotalB = 0,0,0
+        userTotalR, userTotalG, userTotalB = 0,0,0
+        startXPixel = col * 20
+        startYPixel = row * 20
+        for x in range(startXPixel, startXPixel + 20):
+            for y in range(startYPixel, startYPixel + 20):
+                color = mode.targetImage.getpixel((x,y))
+                expectedTotalR += color[0]
+                expectedTotalG += color[1]
+                expectedTotalB += color[2]
+        for x in range(startXPixel, startXPixel + 20):
+            for y in range(startYPixel, startYPixel + 20):
+                color = mode.Rbackground.getpixel((x,y))
+                userTotalR += color[0]
+                userTotalG += color[1]
+                userTotalB += color[2]
+        rDiff = abs(userTotalR - expectedTotalR) // (400)
+        gDiff = abs(userTotalG - expectedTotalG) // (400)
+        bDiff = abs(userTotalB - expectedTotalB) // (400)
+        if (expectedTotalR == 0 and expectedTotalG == 0 and expectedTotalB == 0
+            and userTotalR == 0 and userTotalG == 0 and userTotalB == 0):
+            return None
+        print(f'red: {rDiff}, green: {gDiff}, blue:{bDiff}')
+        finalAverage = 1 - ((rDiff + gDiff + bDiff) / (400))**2
+        return finalAverage
+
+    # display the score once finished
+    def drawScore(mode, canvas):
+        canvas.create_text(mode.width / 2, mode.height / 2, 
+                            text=f'Your score is: {mode.scoreNumber}',
+                            font=('Avenir', 30, 'bold'))
+                            
+    ######################################
+    # sand related things
+    ######################################
 
     # update the mouse's x and y coordinates, and set the mouseIsPressed boolean to true
     def mousePressed(mode, event):
@@ -91,35 +125,41 @@ class sandbox(Mode):
 
     def redrawAll(mode, canvas):
         canvas.create_image(mode.width/2, mode.height/2,  
-                            image=ImageTk.PhotoImage(mode.Sbackground))
+                            image=ImageTk.PhotoImage(mode.Rbackground))
         canvas.create_rectangle(0, 0, mode.effectiveAppWidth, mode.effectiveAppHeight, outline='white')
         mode.drawSand(canvas)
+        if mode.shouldScore and not mode.mouseIsPressed:
+            mode.drawScore(canvas)
 
     # given a certain cell, change the background pixels in that cell to be a color
     def changePixelsGivenCell(mode, row, col, color):
         x0,y0,x1,y1 = mode.getCellBounds(row, col)
         for x in range(x0, x1):
             for y in range(y0, y1):
-                mode.Sbackground.putpixel((x,y), color)
+                mode.Rbackground.putpixel((x,y), color)
 
     # create the particles
     def timerFired(mode):
         # when the mouse is pressed, create shower of particles
         if mode.mouseIsPressed:
             mode.addParticles(mode.currentX, mode.currentY)
+            mode.shouldScore = False
         if mode.timerIsRunning:
             mode.doStep()
         # go through each active particle and move it accordingly
 
     def keyPressed(mode, event):
         if event.key == 'Space':
-            mode.app.setActiveMode(mode.app.gradientMode)
+            mode.app.setActiveMode(mode.app.recreationGradientMode)
         elif event.key == '0':
             mode.timerIsRunning = not mode.timerIsRunning
-        elif event.key == 's':
+        elif event.key == 'm':
             mode.doStep()
         elif event.key == 'Enter':
             mode.app.setActiveMode(mode.app.splashscreenMode)
+        elif event.key == 's':
+            mode.score()
+            mode.shouldScore = True
 
     def particleHitBottom(mode, particle):
         nextY, nextX = particle.getMovePosition()
@@ -157,7 +197,7 @@ class sandbox(Mode):
         if nextY > mode.maxValuesPerCol[nextX]: 
             nextY = mode.maxValuesPerCol[nextX]
         x0,y0,x1,y1 = mode.getCellBounds(nextY, nextX)
-        return mode.Sbackground.getpixel((x0,y1)) != (255,255,255) and not particle.canSlide
+        return mode.Rbackground.getpixel((x0,y1)) != (255,255,255) and not particle.canSlide
     
     def slide(mode, particle):
         nextY, nextX = particle.getMovePosition()
@@ -181,12 +221,12 @@ class sandbox(Mode):
         directions = []
         g = mode.sandGrainSize // 2
         # slide left
-        if (nextLX >= 0 and mode.Sbackground.getpixel((lx0+g,ly1-g)) == (255,255,255) and 
+        if (nextLX >= 0 and mode.Rbackground.getpixel((lx0+g,ly1-g)) == (255,255,255) and 
             nextSY <= mode.maxValuesPerCol[nextLX]):
             directions.append((nextSY, nextLX))
         # slide right
         if (nextRX < mode.effectiveAppWidth // mode.sandGrainSize and 
-            mode.Sbackground.getpixel((rx0+g,ry1-g)) == (255,255,255) and
+            mode.Rbackground.getpixel((rx0+g,ry1-g)) == (255,255,255) and
             nextSY <= mode.maxValuesPerCol[nextRX]):
             directions.append((nextSY, nextRX))
         # if it can't do either, stay in place

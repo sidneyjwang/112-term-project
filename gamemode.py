@@ -91,19 +91,22 @@ class game(Mode):
                 yPositions.append(currentGoal.y)
             nextX = 0
             nextY = 0
+            print(xPositions)
+            print(yPositions)
             # choose an x position for the bucket that's not going to overlap
             while True:
+                shouldContinue = False
                 nextX = random.randint(25, 575)
-                for xValue in xPositions:
-                    if abs(xValue - nextX) > 60:
-                        break
-                break
-            # choose a y position for the bucket that's not going to overlap
-            while True:
                 nextY = random.randint(275, 375)
-                for yValue in yPositions:
-                    if abs(yValue - nextY) < 60:
+                for goal in mode.goals:
+                    if distance(goal.x, goal.y, nextX, nextY) < 75:
+                        print('this happened')
+                        shouldContinue = True
                         break
+                    else: 
+                        shouldContinue = False
+                if shouldContinue:
+                    continue
                 break
             mode.goals.append(Goal(nextX, nextY))
         mode.obstacles = [(mode.offset + 100, random.randint(100,250), random.randint(20,50))] #x0, y0, length
@@ -114,13 +117,18 @@ class game(Mode):
             goalYPos = []
             for goal in mode.goals:
                 goalYPos.append(goal.y)
-            print(goalYPos)
             while True:
+                shouldContinue = False
                 x = random.randint(0, mode.width - length)
                 y = random.randint(100, min(goalYPos) - 50)
                 for x0,y0,length0 in mode.obstacles:
                     if distance(x,y,x0,y0) < 60:
                         break
+                        shouldContinue = True
+                    else:
+                        shouldContinue = False
+                if shouldContinue:
+                    continue
                 break
             mode.obstacles.append((x, y, length))
 

@@ -63,7 +63,6 @@ class game(Mode):
         mode.gameBackground = mode.loadImage('whiteBackground.png')
         mode.timerIsRunning = True # for debugging: run timer/don't by pressing 0
         mode.shouldContinue = True # this is NOT for debugging! DO NOT DELETE
-        mode.canDraw = True # can the user create lines?
         mode.goalImages = [mode.loadImage('bluebucket.png'), mode.loadImage('pinkbucket.png'),
                             mode.loadImage('purplebucket.png')] # load bucket pngs
         mode.funnel = mode.loadImage('funnel.png') # load funnel image
@@ -127,6 +126,9 @@ class game(Mode):
                     continue
                 break
             mode.obstacles.append((x, y, length))
+        mode.canDraw = True # can the user create lines?
+        print(mode.canDraw)
+
 
     # draw all of the obstacles
     def drawObstacles(mode):

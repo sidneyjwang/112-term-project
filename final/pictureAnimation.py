@@ -1,72 +1,43 @@
-####################################
-# sandbox mode
-####################################
+#####################################
+# computer animation mode
+#####################################
 
 from cmu_112_graphics import *
 import random
+import time
 import string
 from particleClass import *
-import copy
 
-class sandbox(Mode):
+class animationMode(Mode):
     def appStarted(mode):
         mode.sand = [] # a list to keep track of all particle objects
         mode.timerDelay = 5 # put this at 5 when not debugging
-        mode.currentX = 0 # the x position of the mouse
-        mode.currentY = 0 # the y position of the mouse
-        mode.mouseIsPressed = False # boolean flag: is the mouse being held?
         mode.effectiveAppWidth = mode.width # for experimentation purposes: make the window smaller
         mode.effectiveAppHeight = mode.height # for experimentation purposes: make the window smaller
         mode.sandGrainSize = 2 # for experimenation purposes: make the sand actually visible
+        mode.currentX = 0 # the x position of sand dispensing spot
+        mode.currentY = mode.effectiveAppHeight // mode.sandGrainSize - 20 # the y position of sand dispensing spot
         # keep track of the highest sand grain particle per column:
         mode.maxValuesPerCol = [mode.effectiveAppHeight // mode.sandGrainSize-1] * (mode.effectiveAppWidth // mode.sandGrainSize)
         # sand grains that are no longer objects and have become part of the background
-        mode.Sbackground = mode.loadImage('whiteBackground.png')
+        mode.screenBackground = mode.loadImage('whiteBackground.png') # start with a blank screen
+        mode.targetImage = mode.loadImage(mode.app.imageName) # the desired image to recreate
+        mode.direction = 1 # is the computer going left --> right, or right --> left?
+        mode.dispenseSand = True # once arrived at the top, don't dispense sand anymore
+        mode.sandColor = (0,0,0) # keep track of sand color
         mode.timerIsRunning = True
-        mode.currentSandColor = copy.deepcopy(mode.app.sandColor[0])
-        mode.betweenColors = True
-        mode.rDifference = 0
-        mode.gDifference = 0
-        mode.bDifference = 0
-        mode.counter = 50
 
-    # wipe the canvas
-    def resetAll(mode):
-        for x in range(mode.width):
-            for y in range(mode.height):
-                if mode.Sbackground.getpixel((x,y)) != (255,255,255):
-                    mode.Sbackground.putpixel((x,y), (255,255,255))
-        mode.maxValuesPerCol = [mode.effectiveAppHeight // mode.sandGrainSize-1] * (mode.effectiveAppWidth // mode.sandGrainSize)
-        mode.sand = []
-
-    # update the mouse's x and y coordinates, and set the mouseIsPressed boolean to true
-    def mousePressed(mode, event):
-        mode.mouseIsPressed = True
-        mode.currentX, mode.currentY = mode.getCell(event.y, event.x)
-
-    # set the mouseIsPressed boolean to false
-    def mouseReleased(mode, event):
-        mode.mouseIsPressed = False
-
-    # update the mouse coordinates when moved
-    def mouseMoved(mode, event):
-        mode.currentX, mode.currentY = mode.getCell(event.y, event.x)
-
-    # also update mouse coordinates when dragged
-    def mouseDragged(mode, event):
-        mode.currentX, mode.currentY = mode.getCell(event.y, event.x)
-
-    # when the mouse is pressed, create a shower of sand emerging from the point
+    # create a shower of sand emerging from the point
     # modify here for testing purposes if a single grain is needed instead of a shower
     def addParticles(mode, x, y):
-        sandGrainNumber = int(random.triangular(5, 10, 5))
+        sandGrainNumber = int(random.triangular(5, 7, 5))
         for i in range(sandGrainNumber):
             colorVar = int(random.triangular(0, 10, 1)) * random.choice([-1, 1])
             signFlip = random.choice([-1, 1])
-            xVelocity = int(random.triangular(0, 3, 0.5)) * signFlip
+            xVelocity = int(random.triangular(0, 2, 0)) * signFlip
             yVelocity = int(random.random() * 8)
             newParticle = Particle(i, x, y, xVelocity, yVelocity, 
-                            mode.currentSandColor, (colorVar,colorVar,colorVar), 
+                            mode.sandColor, (colorVar,colorVar,colorVar), 
                             mode.effectiveAppHeight, mode.effectiveAppWidth, mode.sandGrainSize)
             mode.sand.append(newParticle)
 
@@ -77,13 +48,11 @@ class sandbox(Mode):
             canvas.create_rectangle(x0,y0,x1,y1, 
                                     fill=particle.color, width=0)
 
-    # get the coordinates for a specific cell
     def getCellBounds(mode, row, col):
         x0, y0 = col * mode.sandGrainSize, row * mode.sandGrainSize
         x1, y1 = x0 + mode.sandGrainSize, y0 + mode.sandGrainSize
         return x0,y0,x1,y1
 
-    # given an x, y pixel pair, find which cell it belongs to
     def getCell(mode, x, y):
         row = y // mode.sandGrainSize
         col = x // mode.sandGrainSize
@@ -91,7 +60,7 @@ class sandbox(Mode):
 
     def redrawAll(mode, canvas):
         canvas.create_image(mode.width/2, mode.height/2,  
-                            image=ImageTk.PhotoImage(mode.Sbackground))
+                            image=ImageTk.PhotoImage(mode.screenBackground))
         canvas.create_rectangle(0, 0, mode.effectiveAppWidth, mode.effectiveAppHeight, outline='white')
         mode.drawSand(canvas)
 
@@ -100,62 +69,23 @@ class sandbox(Mode):
         x0,y0,x1,y1 = mode.getCellBounds(row, col)
         for x in range(x0, x1):
             for y in range(y0, y1):
-                mode.Sbackground.putpixel((x,y), color)
-
-    # takes in two colors and determines if they're "almost equal"
-    def almostEqual(mode, x, y):
-        return (abs(x[0]-y[0]) + abs(x[1]-y[1]) + abs(x[2]-y[2])) < 10 ** -6
+                mode.screenBackground.putpixel((x,y), color)
 
     # create the particles
     def timerFired(mode):
-        # when the mouse is pressed, create shower of particles
-        if mode.mouseIsPressed:
-            if len(mode.app.sandColor) > 1:
-                mode.counter += 1
-            mode.addParticles(mode.currentX, mode.currentY)
-            if (len(mode.app.sandColor) > 1 and mode.counter > 200
-            and mode.almostEqual(mode.currentSandColor, mode.app.sandColor[1])):
-                mode.betweenColors = False
-                mode.counter = 0
-                mode.app.sandColor[0], mode.app.sandColor[1] = mode.app.sandColor[1], mode.app.sandColor[0]
-                # mode.currentSandColor = copy.deepcopy(mode.app.sandColor[1])
-            elif (len(mode.app.sandColor) > 1 and mode.counter > 200
-            and mode.almostEqual(mode.currentSandColor, mode.app.sandColor[0])):
-                mode.betweenColors = True
-                mode.counter = 0
-                mode.app.sandColor[0], mode.app.sandColor[1] = mode.app.sandColor[1], mode.app.sandColor[0]
-                
-            mode.currentSandColor[0] += mode.rDifference / 400
-            mode.currentSandColor[1] += mode.gDifference / 400
-            mode.currentSandColor[2] += mode.bDifference / 400
-            
+        # create shower of particles from the dispensing spot
         if mode.timerIsRunning:
             mode.doStep()
-        if mode.app.returnedToSandbox:
-            mode.currentSandColor = copy.deepcopy(mode.app.sandColor[0])
-            mode.app.returnedToSandbox = False
-        if len(mode.app.sandColor) > 1:
-            mode.rDifference = mode.app.sandColor[1][0] - mode.app.sandColor[0][0]
-            mode.gDifference = mode.app.sandColor[1][1] - mode.app.sandColor[0][1]
-            mode.bDifference = mode.app.sandColor[1][2] - mode.app.sandColor[0][2]
+        # go through each active particle and move it accordingly
 
     def keyPressed(mode, event):
-        # bring up the gradient picker
-        if event.key == 'Space':
-            mode.app.setActiveMode(mode.app.gradientMode)
-            mode.app.gradientModeJustOpened = True
-        elif event.key == '0':
+        if event.key == '0':
             mode.timerIsRunning = not mode.timerIsRunning
         elif event.key == 's':
             mode.doStep()
-        # enter returns home
         elif event.key == 'Enter':
             mode.app.setActiveMode(mode.app.splashscreenMode)
-        # clear the screen if r is pressed
-        elif event.key == 'r':
-            mode.resetAll()
 
-    # detects if a particle hit the bottom of the screen
     def particleHitBottom(mode, particle):
         nextY, nextX = particle.getMovePosition()
         if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
@@ -169,8 +99,6 @@ class sandbox(Mode):
             return True
         return False
 
-    # if a particle hit the bottom, call this function to leave it on the bottom
-    # and stop moving
     def leaveParticleOnBottom(mode, particle):
         nextY, nextX = particle.getMovePosition()
         if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
@@ -185,7 +113,6 @@ class sandbox(Mode):
                 nextX, (particle.R, particle.G, particle.B))
         mode.maxValuesPerCol[nextX] -= 1
     
-    # detects collisions with existing sand
     def collisionDetected(mode, particle):
         nextY, nextX = particle.getMovePosition()
         if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
@@ -195,9 +122,8 @@ class sandbox(Mode):
         if nextY > mode.maxValuesPerCol[nextX]: 
             nextY = mode.maxValuesPerCol[nextX]
         x0,y0,x1,y1 = mode.getCellBounds(nextY, nextX)
-        return mode.Sbackground.getpixel((x0,y1)) != (255,255,255) and not particle.canSlide
+        return mode.screenBackground.getpixel((x0,y1)) != (255,255,255) and not particle.canSlide
     
-    # slide!!
     def slide(mode, particle):
         nextY, nextX = particle.getMovePosition()
         if nextX >= mode.effectiveAppWidth // mode.sandGrainSize:
@@ -220,12 +146,12 @@ class sandbox(Mode):
         directions = []
         g = mode.sandGrainSize // 2
         # slide left
-        if (nextLX >= 0 and mode.Sbackground.getpixel((lx0+g,ly1-g)) == (255,255,255) and 
+        if (nextLX >= 0 and mode.screenBackground.getpixel((lx0+g,ly1-g)) == (255,255,255) and 
             nextSY <= mode.maxValuesPerCol[nextLX]):
             directions.append((nextSY, nextLX))
         # slide right
         if (nextRX < mode.effectiveAppWidth // mode.sandGrainSize and 
-            mode.Sbackground.getpixel((rx0+g,ry1-g)) == (255,255,255) and
+            mode.screenBackground.getpixel((rx0+g,ry1-g)) == (255,255,255) and
             nextSY <= mode.maxValuesPerCol[nextRX]):
             directions.append((nextSY, nextRX))
         # if it can't do either, stay in place
@@ -242,6 +168,35 @@ class sandbox(Mode):
             particle.xVelocity = 0
     
     def doStep(mode):
+        g = mode.sandGrainSize // 2
+        if mode.dispenseSand:
+            x0,y0,x1,y1 = mode.getCellBounds(mode.maxValuesPerCol[mode.currentX-1], mode.currentX)
+            # what color do we want?
+            mode.sandColor = mode.targetImage.getpixel((x0+g, y1-g))    
+            mode.addParticles(mode.currentX, mode.currentY)
+            # move at a speed
+            mode.currentX += 2 * mode.direction
+            # if the right side of the screen reached, start going left instead
+            if mode.currentX >= mode.effectiveAppWidth // mode.sandGrainSize:
+                mode.currentX = mode.effectiveAppWidth // mode.sandGrainSize - 1
+                mode.currentY -= 3
+                mode.direction = -1 * mode.direction
+            # hit the left side: start moving right instead
+            elif mode.currentX < 0:
+                mode.currentX = 0
+                mode.currentY -= 3
+                mode.direction = -1 * mode.direction
+            # once reached the top of the screen, dispense from the topmost position
+            if mode.currentY < 0:
+                mode.currentY = 0
+        # stop when reached the top
+        if min(mode.maxValuesPerCol) < 2:
+            mode.dispenseSand = False
+        
+        ######################################
+        # and now, for sand
+        ######################################
+        
         i = 0
         while i < len(mode.sand):
             particle = mode.sand[i]

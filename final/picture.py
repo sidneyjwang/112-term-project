@@ -47,7 +47,7 @@ class picture(Mode):
             mode.animateColor = rgbString(0,0,0)
             mode.recreateColor = rgbString(0,0,0)
 
-    # return to homepage by pressing enter
+    # return to homepage by pressing enter, enter different image name with space
     def keyPressed(mode, event):
         if event.key == 'Enter':
             mode.app.setActiveMode(mode.app.splashscreenMode)

@@ -68,7 +68,6 @@ class splashscreen(Mode):
             mode.app.setActiveMode(mode.app.helpMode)
 
     def redrawAll(mode, canvas):
-        # insert background image here
         canvas.create_image(mode.width / 2, mode.height, 
                             image=ImageTk.PhotoImage(mode.SSbackground), anchor='s')
         canvas.create_text(mode.center, mode.titlePositionY, 

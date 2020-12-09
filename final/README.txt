@@ -10,7 +10,7 @@
 thisisntsand is a sand art generator, with a couple spicy quirks. Deriving inspiration from thisissand.com and Sugar, Sugar, the project features three modes: a sandbox mode, a picture mode, and a game mode. In sandbox mode, the user is free to pick different colors and pile sand to create art. In picture mode, the user uploads a picture and has the option to watch the computer recreate and sand-ify the image, or they may choose to recreate the picture with sand, after which the computer will score their effort. In game mode, the user must direct a flow of sand from a starting point to an end point by drawing lines for the sand to slide on and avoiding the obstacles in the way.
 
 ~~How to play~~
-Open and run thisisntsand.py to begin. No modules necessary outside of 112 course notes PIL/Pillow.
+Open and run thisisntsand.py to begin. No modules necessary outside of 112 course notes PIL/Pillow. Use window size 600 x 400 (default in the code). 
 
 11/23 tp0 update:
 - Open the file named sandbox.py to run the program

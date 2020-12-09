@@ -79,8 +79,8 @@ class game(Mode):
             for y in range(mode.height):
                 if mode.gameBackground.getpixel((x,y)) != (255,255,255):
                     mode.gameBackground.putpixel((x,y), (255,255,255))
-        mode.offset = random.randint(25, 300)
-        mode.sandPos = [(mode.offset, 60)]
+        mode.offset = random.randint(25, 300) # pick first position
+        mode.sandPos = [(mode.offset, 60)] # positions where sand is dispensed from
         mode.goals = [Goal(mode.offset + 200, 375)] # create at least one goal
         mode.gameWon = False # has the game been won?
         mode.extraGoals = random.randint(0,2) # how many extra goals should there be?
@@ -105,6 +105,7 @@ class game(Mode):
                 # found a good position!
                 break
             mode.goals.append(Goal(nextX, nextY))
+        # put a corresponding number of funnels:
         for funnel in range(mode.extraGoals):
             x = 0
             while True:
@@ -179,6 +180,7 @@ class game(Mode):
                 mode.goals[goal].y - 20 <= y <= mode.goals[goal].y + 25):
                 return goal
 
+    # draws all the funnels
     def drawFunnels(mode, canvas):
         for funnel in range(len(mode.sandPos)):
             canvas.create_image(mode.sandPos[funnel][0], mode.sandPos[funnel][1],

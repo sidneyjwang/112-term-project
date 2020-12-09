@@ -19,8 +19,6 @@ class gradientRecreation(Mode):
         if color == (255,255,255):
             color = (254,254,254)
         mode.app.sandColor = color
-        print(x,y)
-        print(mode.app.sandColor)
 
     def mouseReleased(mode, event):
         mode.app.setActiveMode(mode.app.recreationMode)

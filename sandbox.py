@@ -49,6 +49,15 @@ class sandbox(Mode):
         mode.bDifference = 0
         mode.counter = 50
 
+    # wipe the canvas
+    def resetAll(mode):
+        for x in range(mode.width):
+            for y in range(mode.height):
+                if mode.Sbackground.getpixel((x,y)) != (255,255,255):
+                    mode.Sbackground.putpixel((x,y), (255,255,255))
+        mode.maxValuesPerCol = [mode.effectiveAppHeight // mode.sandGrainSize-1] * (mode.effectiveAppWidth // mode.sandGrainSize)
+        mode.sand = []
+
     # update the mouse's x and y coordinates, and set the mouseIsPressed boolean to true
     def mousePressed(mode, event):
         mode.mouseIsPressed = True
@@ -154,6 +163,7 @@ class sandbox(Mode):
             mode.bDifference = mode.app.sandColor[1][2] - mode.app.sandColor[0][2]
 
     def keyPressed(mode, event):
+        # bring up the gradient picker
         if event.key == 'Space':
             mode.app.setActiveMode(mode.app.gradientMode)
             mode.app.gradientModeJustOpened = True
@@ -161,8 +171,12 @@ class sandbox(Mode):
             mode.timerIsRunning = not mode.timerIsRunning
         elif event.key == 's':
             mode.doStep()
+        # enter returns home
         elif event.key == 'Enter':
             mode.app.setActiveMode(mode.app.splashscreenMode)
+        # clear the screen if r is pressed
+        elif event.key == 'r':
+            mode.resetAll()
 
     # detects if a particle hit the bottom of the screen
     def particleHitBottom(mode, particle):

@@ -54,6 +54,9 @@ class picture(Mode):
     def keyPressed(mode, event):
         if event.key == 'Enter':
             mode.app.setActiveMode(mode.app.splashscreenMode)
+        elif event.key == 'Space':
+            mode.app.imageName = mode.getUserInput('Please input name of file:') # what file?
+            print(mode.app.imageName)
 
     def redrawAll(mode, canvas):
         canvas.create_text(mode.width / 2, mode.height / 16 * 3, text='picture mode', 

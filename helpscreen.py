@@ -14,7 +14,7 @@ class helpScreen(Mode):
         canvas.create_text(mode.width/14, mode.height/32 * 7, text='sandbox mode', 
                             font=("Avenir", 20, 'bold'), anchor = 'w')
         canvas.create_text(mode.width/14, mode.height/32 * 9, 
-                            text='drag the mouse to dispense sand, press space to select colors', 
+                            text='drag the mouse to dispense sand, press space to select colors, r to reset', 
                             font=("Avenir", 16), anchor = 'w')
         canvas.create_text(mode.width/14, mode.height/32 * 12, text='picture mode', 
                             font=("Avenir", 20, 'bold'), anchor = 'w')

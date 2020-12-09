@@ -37,6 +37,7 @@ Help screen:
 Sandbox mode:
 - Press space to bring up gradient picker.
 - Press Enter to return to home screen.
+- Press R to reset the canvas to blank.
 
 Game mode:
 - Press space to begin letting sand fall. Note that drawing is disabled when new sand is being added.

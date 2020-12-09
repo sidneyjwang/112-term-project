@@ -56,7 +56,6 @@ class game(Mode):
         mode.mouseMovedDelay = 10 # put this at 1 for line drawing purposes
         mode.mouseX, mode.mouseY = 0, 0 # keep track of current mouse coordinates
         mode.oldMouseX, mode.oldMouseY = 0, 0 # keep track of old mouse coordinates
-        mode.spaceIsPressed = False # boolean flag: is the mouse being held?
         mode.effectiveAppWidth = mode.width # for experimentation purposes: make the window smaller
         mode.effectiveAppHeight = mode.height # for experimentation purposes: make the window smaller
         mode.sandGrainSize = 2 # for experimenation purposes: make the sand actually visible
@@ -127,6 +126,7 @@ class game(Mode):
                 break
             mode.obstacles.append((x, y, length))
         mode.canDraw = True # can the user create lines?
+        mode.spaceIsPressed = False
         print(mode.canDraw)
 
 

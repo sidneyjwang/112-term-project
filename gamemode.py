@@ -8,6 +8,7 @@ import string
 from particleClass import *
 from goalClass import *
 
+# from 112 course website
 def rgbString(r, g, b):
     return f'#{r:02x}{g:02x}{b:02x}'
 
@@ -53,7 +54,7 @@ class game(Mode):
     def appStarted(mode):
         mode.sand = [] # a list to keep track of all particle objects
         mode.timerDelay = 5 # put this at 5 when not debugging
-        mode.mouseMovedDelay = 10 # put this at 1 for line drawing purposes
+        mode.mouseMovedDelay = 10 # put this at 10 for line drawing purposes
         mode.mouseX, mode.mouseY = 0, 0 # keep track of current mouse coordinates
         mode.oldMouseX, mode.oldMouseY = 0, 0 # keep track of old mouse coordinates
         mode.effectiveAppWidth = mode.width # for experimentation purposes: make the window smaller
@@ -64,7 +65,9 @@ class game(Mode):
         mode.shouldContinue = True # this is NOT for debugging! DO NOT DELETE
         mode.goalImages = [mode.loadImage('bluebucket.png'), mode.loadImage('pinkbucket.png'),
                             mode.loadImage('purplebucket.png')] # load bucket pngs
-        mode.funnel = mode.loadImage('funnel.png') # load funnel image
+        mode.funnel = [mode.loadImage('blueFunnel.png'), mode.loadImage('pinkFunnel.png'),
+                            mode.loadImage('purpleFunnel.png')] # load funnel images
+        mode.colors = [(91, 168, 255), (247, 158, 255), (193, 163, 255)] # blue, pink, purple
         mode.resetAll()
 
     def resetAll(mode):
@@ -75,8 +78,7 @@ class game(Mode):
                 if mode.gameBackground.getpixel((x,y)) != (255,255,255):
                     mode.gameBackground.putpixel((x,y), (255,255,255))
         mode.offset = random.randint(25, 300)
-        mode.sandX = mode.offset # where is the sand being dispensed from?
-        mode.sandY = 60 # see above
+        mode.sandPos = [(mode.offset, 60)]
         mode.goals = [Goal(mode.offset + 200, 375)] # create at least one goal
         mode.gameWon = False # has the game been won?
         mode.extraGoals = random.randint(0,2) # how many extra goals should there be?
@@ -102,6 +104,22 @@ class game(Mode):
                 # found a good position!
                 break
             mode.goals.append(Goal(nextX, nextY))
+        for funnel in range(mode.extraGoals):
+            x = 0
+            while True:
+                print('stuck here')
+                shouldContinue = False
+                x = random.randint(100, 500)
+                for funnel in mode.sandPos:
+                    if distance(funnel[0], funnel[1], x, funnel[1]) < 75:
+                        shouldContinue = True
+                        break
+                    else:
+                        shouldContinue = False
+                if shouldContinue:
+                    continue
+                break
+            mode.sandPos.append((x, 60))
         mode.obstacles = [(mode.offset + 100, random.randint(100,250), random.randint(20,50))] #x0, y0, length
         for obstacle in range(random.randint(2, 4)):
             length = random.randint(50, 100)
@@ -128,7 +146,6 @@ class game(Mode):
         mode.canDraw = True # can the user create lines?
         mode.spaceIsPressed = False
         print(mode.canDraw)
-
 
     # draw all of the obstacles
     def drawObstacles(mode):
@@ -163,6 +180,11 @@ class game(Mode):
                 mode.goals[goal].y - 20 <= y <= mode.goals[goal].y + 25):
                 return goal
 
+    def drawFunnels(mode, canvas):
+        for funnel in range(len(mode.sandPos)):
+            canvas.create_image(mode.sandPos[funnel][0], mode.sandPos[funnel][1],
+                                image=ImageTk.PhotoImage(mode.funnel[funnel]), anchor='s')
+    
     # draw the buckets
     def drawGoals(mode, canvas):
         for goal in range(len(mode.goals)):
@@ -202,8 +224,8 @@ class game(Mode):
             for x, y in linePoints:
                 if mode.gameBackground.getpixel((x+g,y-g)) == (255,255,255):
                     # give the lines some thickness
-                    for horizontal in range(x-2, x+3):
-                        for vertical in range(y-2, y+3):
+                    for horizontal in range(x-3, x+4):
+                        for vertical in range(y-3, y+4):
                             mode.gameBackground.putpixel((horizontal,vertical),(0,0,0))
 
     def changePixelsGivenCell(mode, row, col, color):
@@ -212,7 +234,7 @@ class game(Mode):
             for y in range(y0, y1):
                 mode.gameBackground.putpixel((x,y), color)
 
-    def addParticles(mode, x, y):
+    def addParticles(mode, x, y, color):
         sandGrainNumber = int(random.triangular(7, 15, 10))
         for i in range(sandGrainNumber):
             colorVar = int(random.triangular(0, 15, 1)) * random.choice([-1, 1])
@@ -220,7 +242,7 @@ class game(Mode):
             xVelocity = int(random.triangular(0, 3, 0.5)) * signFlip
             yVelocity = int(random.random() * 8)
             newParticle = Particle(i, x, y, xVelocity, yVelocity, 
-                            (100, 100, 255), (colorVar,colorVar,colorVar), 
+                            color, (colorVar,colorVar,colorVar), 
                             mode.effectiveAppHeight, mode.effectiveAppWidth, mode.sandGrainSize)
             mode.sand.append(newParticle)
 
@@ -246,8 +268,7 @@ class game(Mode):
                             image=ImageTk.PhotoImage(mode.gameBackground))
         mode.drawSand(canvas)
         mode.drawGoals(canvas)
-        canvas.create_image(mode.sandX, mode.sandY, image=ImageTk.PhotoImage(mode.funnel),
-                            anchor='s')
+        mode.drawFunnels(canvas)
         if mode.gameWon:
             mode.drawGameWon(canvas)
 
@@ -255,7 +276,9 @@ class game(Mode):
     def timerFired(mode):
         # when space is pressed, dispense the particles
         if mode.spaceIsPressed:
-            mode.addParticles(mode.sandX // mode.sandGrainSize, mode.sandY // mode.sandGrainSize)
+            for i in range(len(mode.sandPos)):
+                mode.addParticles(mode.sandPos[i][0] // mode.sandGrainSize, 
+                            mode.sandPos[i][1] // mode.sandGrainSize, mode.colors[i])
         mode.doStep()
         mode.checkForWin()
         mode.drawObstacles()
@@ -311,6 +334,9 @@ class game(Mode):
             particle.yVelocity = 1
             particle.xVelocity = 0
         
+    def colorIsAlmostEqual(mode, particle, color):
+        return (abs(particle.R - color[0]) + abs(particle.G - color[1]) + abs(particle.B - color[2])) < 20
+    
     def cellIsOccupied(mode, row, col):
         g = mode.sandGrainSize // 2
         x0,y0,x1,y1 = mode.getCellBounds(row, col)
@@ -382,7 +408,9 @@ class game(Mode):
                 nextRow, nextCol = particle.getMovePosition()
                 x0,y0,x1,y1 = mode.getCellBounds(nextRow, nextCol)
                 goalNumber = mode.findGoalIndex((x0+x1) // 2, y1)
-                mode.goals[goalNumber].decreaseCounter()
+                # if sand is the same color:
+                if mode.colorIsAlmostEqual(particle, mode.colors[goalNumber]):
+                    mode.goals[goalNumber].decreaseCounter()
                 mode.sand.remove(particle)
             
             # if it's going to collide with something or reaches the bottom, sit at a legal spot

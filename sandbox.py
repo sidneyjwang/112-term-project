@@ -6,6 +6,7 @@ from cmu_112_graphics import *
 import random
 import string
 from particleClass import *
+import copy
 
 # takes in a rgbString and converts it to RGB
 def rgbStringtoRGB(rgbString):
@@ -27,6 +28,7 @@ def convertHexDigitToBaseTen(digit):
 
 class sandbox(Mode):
     def appStarted(mode):
+        print('app was started')
         mode.sand = [] # a list to keep track of all particle objects
         mode.timerDelay = 5 # put this at 5 when not debugging
         mode.currentX = 0 # the x position of the mouse
@@ -40,6 +42,12 @@ class sandbox(Mode):
         # sand grains that are no longer objects and have become part of the background
         mode.Sbackground = mode.loadImage('whiteBackground.png')
         mode.timerIsRunning = True
+        mode.currentSandColor = copy.deepcopy(mode.app.sandColor[0])
+        mode.betweenColors = True
+        mode.rDifference = 0
+        mode.gDifference = 0
+        mode.bDifference = 0
+        mode.counter = 50
 
     # update the mouse's x and y coordinates, and set the mouseIsPressed boolean to true
     def mousePressed(mode, event):
@@ -68,7 +76,7 @@ class sandbox(Mode):
             xVelocity = int(random.triangular(0, 3, 0.5)) * signFlip
             yVelocity = int(random.random() * 8)
             newParticle = Particle(i, x, y, xVelocity, yVelocity, 
-                            mode.app.sandColor, (colorVar,colorVar,colorVar), 
+                            mode.currentSandColor, (colorVar,colorVar,colorVar), 
                             mode.effectiveAppHeight, mode.effectiveAppWidth, mode.sandGrainSize)
             mode.sand.append(newParticle)
 
@@ -104,18 +112,51 @@ class sandbox(Mode):
             for y in range(y0, y1):
                 mode.Sbackground.putpixel((x,y), color)
 
+    # takes in two colors and determines if they're "almost equal"
+    def almostEqual(mode, x, y):
+        return (abs(x[0]-y[0]) + abs(x[1]-y[1]) + abs(x[2]-y[2])) < 10 ** -6
+
     # create the particles
     def timerFired(mode):
         # when the mouse is pressed, create shower of particles
         if mode.mouseIsPressed:
+            if len(mode.app.sandColor) > 1:
+                mode.counter += 1
+            print(f'gradient: {mode.app.sandColor}')
+            print(f'current color: {mode.currentSandColor}')
             mode.addParticles(mode.currentX, mode.currentY)
+            if (len(mode.app.sandColor) > 1 and mode.counter > 200
+            and mode.almostEqual(mode.currentSandColor, mode.app.sandColor[1])):
+                print('HIT UPPER BOUND')
+                mode.betweenColors = False
+                mode.counter = 0
+                mode.app.sandColor[0], mode.app.sandColor[1] = mode.app.sandColor[1], mode.app.sandColor[0]
+                # mode.currentSandColor = copy.deepcopy(mode.app.sandColor[1])
+            elif (len(mode.app.sandColor) > 1 and mode.counter > 200
+            and mode.almostEqual(mode.currentSandColor, mode.app.sandColor[0])):
+                print('HIT LOWER BOUND')
+                mode.betweenColors = True
+                mode.counter = 0
+                mode.app.sandColor[0], mode.app.sandColor[1] = mode.app.sandColor[1], mode.app.sandColor[0]
+                
+            mode.currentSandColor[0] += mode.rDifference / 400
+            mode.currentSandColor[1] += mode.gDifference / 400
+            mode.currentSandColor[2] += mode.bDifference / 400
+            
         if mode.timerIsRunning:
             mode.doStep()
-        # go through each active particle and move it accordingly
+        if mode.app.returnedToSandbox:
+            mode.currentSandColor = copy.deepcopy(mode.app.sandColor[0])
+            mode.app.returnedToSandbox = False
+        if len(mode.app.sandColor) > 1:
+            mode.rDifference = mode.app.sandColor[1][0] - mode.app.sandColor[0][0]
+            mode.gDifference = mode.app.sandColor[1][1] - mode.app.sandColor[0][1]
+            mode.bDifference = mode.app.sandColor[1][2] - mode.app.sandColor[0][2]
 
     def keyPressed(mode, event):
         if event.key == 'Space':
             mode.app.setActiveMode(mode.app.gradientMode)
+            mode.app.gradientModeJustOpened = True
         elif event.key == '0':
             mode.timerIsRunning = not mode.timerIsRunning
         elif event.key == 's':

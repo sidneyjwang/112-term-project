@@ -20,9 +20,9 @@ class Particle:
         self.yVelocity = yVelocity
         self.time = 0
         self.xVelocity = xVelocity
-        self.R = intendedColor[0] + colorVariation[0]
-        self.G = intendedColor[1] + colorVariation[1]
-        self.B = intendedColor[2] + colorVariation[2]
+        self.R = int(intendedColor[0]) + colorVariation[0]
+        self.G = int(intendedColor[1]) + colorVariation[1]
+        self.B = int(intendedColor[2]) + colorVariation[2]
         if self.R > 254: self.R = 254
         elif self.R < 1: self.R = 1
         if self.G > 254: self.G = 254

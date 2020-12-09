@@ -8,27 +8,8 @@ import string
 from particleClass import *
 import copy
 
-# takes in a rgbString and converts it to RGB
-def rgbStringtoRGB(rgbString):
-    red1 = convertHexDigitToBaseTen(rgbString[1])
-    red2 = convertHexDigitToBaseTen(rgbString[2])
-    green1 = convertHexDigitToBaseTen(rgbString[3])
-    green2 = convertHexDigitToBaseTen(rgbString[4])
-    blue1 = convertHexDigitToBaseTen(rgbString[5])
-    blue2 = convertHexDigitToBaseTen(rgbString[6])
-    print(red1,red2,green1,green2,blue1,blue2)
-    return (red2 + 16*red1, green2 + 16*green1, blue2 + 16*blue1)
-
-# helper function for rgbStringtoRGB    
-def convertHexDigitToBaseTen(digit):
-    if digit in string.digits:
-        return int(digit)
-    else:
-        return string.ascii_lowercase.find(digit) + 10
-
 class sandbox(Mode):
     def appStarted(mode):
-        print('app was started')
         mode.sand = [] # a list to keep track of all particle objects
         mode.timerDelay = 5 # put this at 5 when not debugging
         mode.currentX = 0 # the x position of the mouse
@@ -131,19 +112,15 @@ class sandbox(Mode):
         if mode.mouseIsPressed:
             if len(mode.app.sandColor) > 1:
                 mode.counter += 1
-            print(f'gradient: {mode.app.sandColor}')
-            print(f'current color: {mode.currentSandColor}')
             mode.addParticles(mode.currentX, mode.currentY)
             if (len(mode.app.sandColor) > 1 and mode.counter > 200
             and mode.almostEqual(mode.currentSandColor, mode.app.sandColor[1])):
-                print('HIT UPPER BOUND')
                 mode.betweenColors = False
                 mode.counter = 0
                 mode.app.sandColor[0], mode.app.sandColor[1] = mode.app.sandColor[1], mode.app.sandColor[0]
                 # mode.currentSandColor = copy.deepcopy(mode.app.sandColor[1])
             elif (len(mode.app.sandColor) > 1 and mode.counter > 200
             and mode.almostEqual(mode.currentSandColor, mode.app.sandColor[0])):
-                print('HIT LOWER BOUND')
                 mode.betweenColors = True
                 mode.counter = 0
                 mode.app.sandColor[0], mode.app.sandColor[1] = mode.app.sandColor[1], mode.app.sandColor[0]

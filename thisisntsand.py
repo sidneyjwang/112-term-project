@@ -1,5 +1,5 @@
 #####################################
-# this is the main file- run this!
+# ~welcome to thisisntsand~
 #####################################
 
 # this project uses cmu-112-graphics, which was taken from

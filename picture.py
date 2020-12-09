@@ -20,7 +20,6 @@ class picture(Mode):
         mode.recreateColor = rgbString(0,0,0) # color for recreate
         mode.animateColor = rgbString(0,0,0) # color for animate
         mode.app.imageName = mode.getUserInput('Please input name of file:') # what file?
-        print(mode.app.imageName)
 
     def mouseMoved(mode, event):
         mode.mouseX, mode.mouseY = event.x, event.y
@@ -29,11 +28,9 @@ class picture(Mode):
     def mousePressed(mode, event):
         if (mode.recreatePos[0]-mode.recreateWidth <= mode.mouseX <= mode.recreatePos[0]+mode.recreateWidth and
         mode.recreatePos[1]-mode.textHeight <= mode.mouseY <= mode.recreatePos[1]+mode.textHeight):
-            print('recreate!')
             mode.app.setActiveMode(mode.app.recreationMode)
         elif (mode.animatePos[0]-mode.animateWidth <= mode.mouseX <= mode.animatePos[0]+mode.animateWidth and
         mode.animatePos[1]-mode.textHeight <= mode.mouseY <= mode.animatePos[1]+mode.textHeight):
-            print('animate!')
             mode.app.setActiveMode(mode.app.animationMode)
 
     # detect mouse hovering over text and turn it gray
@@ -56,7 +53,6 @@ class picture(Mode):
             mode.app.setActiveMode(mode.app.splashscreenMode)
         elif event.key == 'Space':
             mode.app.imageName = mode.getUserInput('Please input name of file:') # what file?
-            print(mode.app.imageName)
 
     def redrawAll(mode, canvas):
         canvas.create_text(mode.width / 2, mode.height / 16 * 3, text='picture mode', 

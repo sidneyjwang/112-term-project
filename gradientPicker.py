@@ -14,7 +14,6 @@ def rgbStringtoRGB(rgbString):
     green2 = convertHexDigitToBaseTen(rgbString[4])
     blue1 = convertHexDigitToBaseTen(rgbString[5])
     blue2 = convertHexDigitToBaseTen(rgbString[6])
-    print(red1,red2,green1,green2,blue1,blue2)
     return (red2 + 16*red1, green2 + 16*green1, blue2 + 16*blue1)
 
 # helper function for rgbStringtoRGB    
@@ -62,8 +61,6 @@ class gradient(Mode):
         else:
             if len(mode.app.sandColor) < 2:
                 mode.app.sandColor.append(color)
-        print(x,y)
-        print(mode.app.sandColor)
 
     # return back to old screen once space is pressed
     def keyPressed(mode, event):

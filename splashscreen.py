@@ -33,17 +33,14 @@ class splashscreen(Mode):
         if (mode.center-mode.sandboxWidth < mode.mouseX < mode.center+mode.sandboxWidth and
         mode.sandboxTextY-mode.textHeight < mode.mouseY < mode.sandboxTextY+mode.textHeight):
             # replace with sandbox mode
-            print('sandbox!')
             mode.app.setActiveMode(mode.app.sandboxMode)
         elif (mode.center-mode.pictureWidth < mode.mouseX < mode.center+mode.pictureWidth and
         mode.pictureTextY-mode.textHeight < mode.mouseY < mode.pictureTextY+mode.textHeight):
             # replace with picture mode
-            print('picture!')
             mode.app.setActiveMode(mode.app.pictureMode)
         elif (mode.center-mode.gameWidth < mode.mouseX < mode.center+mode.gameWidth and
         mode.gameTextY-mode.textHeight < mode.mouseY < mode.gameTextY+mode.textHeight):
             # replace with game mode
-            print('game!')
             mode.app.setActiveMode(mode.app.gameMode)
 
     # check if the mouse is hovering over text; if so, make it gray :)

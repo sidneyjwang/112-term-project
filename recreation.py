@@ -33,7 +33,6 @@ class recreationMode(Mode):
             for col in range(mode.effectiveAppWidth // 20):
                 if mode.scoreCell(row, col) != None and mode.scoreCell(row, col) < .95:
                     result.append(mode.scoreCell(row, col))
-        print(result)
         mode.scoreNumber = sum(result) * 100 // len(result)
         mode.scoreNumber = int(mode.scoreNumber)
     
@@ -65,7 +64,6 @@ class recreationMode(Mode):
         if (expectedTotalR == 0 and expectedTotalG == 0 and expectedTotalB == 0
             and userTotalR == 0 and userTotalG == 0 and userTotalB == 0):
             return None
-        print(f'red: {rDiff}, green: {gDiff}, blue:{bDiff}')
         finalAverage = 1 - ((rDiff + gDiff + bDiff) / (400))**2
         return finalAverage
 

@@ -170,9 +170,7 @@ class animationMode(Mode):
     def doStep(mode):
         g = mode.sandGrainSize // 2
         if mode.dispenseSand:
-            print(f'currentX: {mode.currentX}')
             x0,y0,x1,y1 = mode.getCellBounds(mode.maxValuesPerCol[mode.currentX-1], mode.currentX)
-            print(f'x0,y0,x1,y1: {x0}, {y0}, {x1}, {y1}')
             # what color do we want?
             mode.sandColor = mode.targetImage.getpixel((x0+g, y1-g))    
             mode.addParticles(mode.currentX, mode.currentY)

@@ -12,6 +12,8 @@ from goalClass import *
 def rgbString(r, g, b):
     return f'#{r:02x}{g:02x}{b:02x}'
 
+# Bresenham's Line Drawing Algorithm
+# inspiration from https://inst.eecs.berkeley.edu/~cs150/fa10/Lab/CP3/LineDrawing.pdf
 def getLinePoints(x0,y0,x1,y1):
     didSwitch = False
     # if the line is vertical:
@@ -93,7 +95,6 @@ class game(Mode):
                 nextY = random.randint(275, 375)
                 for goal in mode.goals:
                     if distance(goal.x, goal.y, nextX, nextY) < 75:
-                        print('this happened')
                         # a position that overlapped was picked; try again
                         shouldContinue = True
                         break
@@ -107,7 +108,6 @@ class game(Mode):
         for funnel in range(mode.extraGoals):
             x = 0
             while True:
-                print('stuck here')
                 shouldContinue = False
                 x = random.randint(100, 500)
                 for funnel in mode.sandPos:
@@ -145,7 +145,6 @@ class game(Mode):
             mode.obstacles.append((x, y, length))
         mode.canDraw = True # can the user create lines?
         mode.spaceIsPressed = False
-        print(mode.canDraw)
 
     # draw all of the obstacles
     def drawObstacles(mode):

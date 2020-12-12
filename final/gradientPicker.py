@@ -59,7 +59,7 @@ class gradient(Mode):
             mode.app.gradientModeJustOpened = False
         # add an additional color
         else:
-            if len(mode.app.sandColor) < 2:
+            if len(mode.app.sandColor) == 1:
                 mode.app.sandColor.append(color)
 
     # return back to old screen once space is pressed

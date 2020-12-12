@@ -25,7 +25,7 @@ Open and run thisisntsand.py to begin. No modules necessary outside of 112 cours
 
 12/9 tp3 update:
 - Added a couple quality of life features
-- Now featuring: Gradients!
+- Now featuring: Gradients! And multi-colored game mode sand!
 
 ~~Controls~~
 Home screen:
